@@ -1,0 +1,480 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GoWork · Google Ads Command Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+ --bg:#efe6d6;--bg2:#e9dcc7;--panel:#faf4e9;--panel2:#f3e9d8;--line:#e0d2bb;--line2:#d3c2a6;
+ --txt:#43382c;--mut:#8d7d68;--clay:#c2603f;--clay2:#a94e30;--claybg:#f0d9cd;
+ --olive:#7a8c54;--olivebg:#e4e6d2;--mustard:#d39a45;--mustbg:#f3e4c8;
+ --teal:#5b7d6f;--sand:#cdb38a;--shadow:0 6px 22px rgba(120,90,50,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:60;background:rgba(239,230,214,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line2)}
+.navtop{display:flex;align-items:center;gap:14px;padding:11px 0;flex-wrap:wrap}
+.brand{font-weight:800;font-size:18px;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+.dot{width:10px;height:10px;border-radius:3px;background:var(--clay)}
+.pill{font-size:11px;color:var(--mut);background:var(--panel);border:1px solid var(--line);padding:4px 10px;border-radius:7px}
+/* control bar */
+.controls{background:var(--panel);border-bottom:1px solid var(--line2);padding:12px 0}
+.crow{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap}
+.cgrp{display:flex;flex-direction:column;gap:7px}
+.clab{font-size:10.5px;font-weight:800;letter-spacing:.7px;color:var(--mut);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.clab .sq{width:11px;height:11px;border-radius:3px;background:var(--clay)}
+.qr{display:flex;gap:7px;flex-wrap:wrap}
+.qr button{font-size:12.5px;font-weight:700;color:var(--txt);background:var(--panel2);border:1px solid var(--line2);padding:8px 15px;border-radius:22px;cursor:pointer;transition:.15s}
+.qr button:hover{background:var(--bg2)}
+.qr button.on{background:var(--clay);color:#fff;border-color:var(--clay)}
+.selwrap{display:flex;align-items:center;gap:8px}
+select{font-size:13px;font-weight:600;color:var(--txt);background:var(--panel2);border:1px solid var(--line2);padding:9px 12px;border-radius:9px;cursor:pointer;min-width:120px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238d7d68'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+.arrow{color:var(--mut);font-weight:800}
+.chk{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--mut);text-transform:uppercase}
+.chk input{width:17px;height:17px;accent-color:var(--clay);cursor:pointer}
+#periodB{display:none}
+#periodB.show{display:flex}
+.cal{font-size:12px;color:var(--mut);background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--clay);border-radius:8px;padding:8px 12px;margin-top:10px}
+.navlinks{display:flex;gap:4px;overflow-x:auto;padding:7px 0}
+.navlinks a{white-space:nowrap;font-size:12px;color:var(--mut);padding:6px 11px;border-radius:7px;border:1px solid transparent}
+.navlinks a:hover{color:var(--txt);background:var(--panel2);border-color:var(--line)}
+section{padding:30px 0 4px;scroll-margin-top:230px}
+.sechd{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.secnum{font-size:12px;font-weight:800;color:#fff;background:var(--clay);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:9px;flex:none}
+.sechd h2{font-size:20px;letter-spacing:-.3px}
+.subtle{color:var(--mut);font-size:13px;margin:2px 0 14px 44px}
+.snap{font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--clay2);background:var(--claybg);border-radius:6px;padding:2px 8px;text-transform:uppercase;margin-left:8px}
+.grid{display:grid;gap:13px}.kpis{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--shadow)}
+.kpi .lab{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-.5px}
+.kpi .chg{font-size:12px;margin-top:5px;font-weight:700}
+.up{color:var(--olive)}.down{color:var(--clay)}.flat{color:var(--mut)}
+.insight{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--sand);border-radius:9px;padding:12px 14px;margin:13px 0;font-size:13.3px}
+.insight b{color:#5a4a38}
+.insight.win{background:var(--olivebg);border-left-color:var(--olive)}
+.insight.warn{background:var(--mustbg);border-left-color:var(--mustard)}
+.insight.risk{background:var(--claybg);border-left-color:var(--clay)}
+.flags{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px;margin-top:13px}
+.flag{border-radius:11px;padding:13px;border:1px solid var(--line)}
+.flag .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:700}
+.flag .n{font-size:15px;font-weight:800;margin-top:5px}
+.flag .d{font-size:12.3px;color:var(--mut);margin-top:4px}
+.flag.g{background:var(--olivebg)}.flag.r{background:var(--claybg)}.flag.b{background:var(--mustbg)}.flag.y{background:var(--panel2)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+th{background:var(--panel2);color:var(--mut);font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.4px;cursor:pointer}
+tbody tr:hover{background:var(--panel2)}tbody tr:hover td:first-child{background:var(--panel2)}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+.b-scale{background:var(--olivebg);color:#566b3f}.b-maintain{background:var(--mustbg);color:#9a6b1f}
+.b-optimize{background:#efe0cf;color:#9a6b1f}.b-pause{background:var(--claybg);color:var(--clay2)}
+.b-star{background:var(--olivebg);color:#566b3f}.b-growth{background:var(--mustbg);color:#9a6b1f}
+.b-under{background:#efe0cf;color:#9a6b1f}.b-waste{background:var(--claybg);color:var(--clay2)}
+.health{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center}
+@media(max-width:720px){.health{grid-template-columns:1fr}}
+.gauge{width:180px;height:180px;margin:auto}
+.num{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sub{display:flex;flex-direction:column;gap:10px}
+.subrow{display:grid;grid-template-columns:150px 1fr 40px;align-items:center;gap:12px;font-size:13px}
+.lbar{height:9px;border-radius:6px;background:var(--line);overflow:hidden}.lbar>i{display:block;height:100%}
+.sv{font-weight:800;text-align:right}
+.chartbox{position:relative;height:300px;margin-top:8px}.chartbox.sm{height:250px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:860px){.two{grid-template-columns:1fr}}
+.acc{border:1px solid var(--line);border-radius:11px;margin-top:10px;overflow:hidden;background:var(--panel)}
+.acc summary{padding:13px 15px;cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px;background:var(--panel2)}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::before{content:'+';color:var(--clay);font-weight:800;font-size:17px}
+.acc[open] summary::before{content:'\2212'}
+.acc .body{padding:4px 15px 14px}
+.rec{display:flex;gap:13px;padding:13px;border:1px solid var(--line);border-radius:11px;margin-top:9px;background:var(--panel)}
+.pn{flex:none;width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.p1{background:var(--claybg);color:var(--clay2)}.p2{background:var(--mustbg);color:#9a6b1f}.p3{background:var(--olivebg);color:#566b3f}
+.rec h4{font-size:14px;margin-bottom:3px}.rec .meta{font-size:12.3px;color:var(--mut)}.rec .meta b{color:var(--txt)}
+.note{font-size:12px;color:var(--mut);font-style:italic;margin-top:8px}
+.tag{font-size:10px;padding:2px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.cmo .q{border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-top:9px;background:var(--panel)}
+.cmo .q h4{font-size:13.3px;color:var(--clay2);margin-bottom:4px}
+footer{margin:46px 0 28px;color:var(--mut);font-size:12px;text-align:center;border-top:1px solid var(--line2);padding-top:18px}
+</style></head>
+<body>
+<header>
+ <div class="wrap">
+  <div class="navtop">
+   <div class="brand"><span class="dot"></span>GoWork · Google Ads Command Center</div>
+   <span class="pill">Acct 626-115-8335</span><span class="pill" id="periodPill">—</span><span class="pill">IDR</span>
+  </div>
+ </div>
+ <div class="controls"><div class="wrap">
+  <div class="crow">
+   <div class="cgrp"><div class="clab">Quick range (through last full month)</div>
+    <div class="qr" id="qr">
+     <button data-r="3">3M</button><button data-r="6">6M</button><button data-r="12">12M</button>
+     <button data-r="24">24M</button><button data-r="0">All</button><button data-r="1" class="on">Latest month</button></div></div>
+   <div class="cgrp"><div class="clab"><span class="sq"></span>Period A — Start → End</div>
+    <div class="selwrap"><select id="aStart"></select><span class="arrow">→</span><select id="aEnd"></select></div></div>
+   <div class="cgrp"><div class="clab">Chart metric</div>
+    <select id="metric">
+     <option value="cpl">CPR (Cost / Lead)</option><option value="spend">Spend</option>
+     <option value="conv">Leads</option><option value="cpc">CPC</option><option value="ctr">CTR</option>
+     <option value="cvr">Conv. Rate</option><option value="clicks">Clicks</option><option value="impr">Impressions</option></select></div>
+   <div class="cgrp" id="mtdBasisWrap" style="display:none"><div class="clab" style="color:var(--clay2)">MTD baseline (fair 19-day)</div>
+    <select id="mtdBasis"><option value="prevmonth">vs May 1–19 '26 (prev month)</option><option value="yoy">vs Jun 1–19 '25 (last year)</option></select></div>
+   <div class="cgrp"><div class="clab">Comparison</div>
+    <label class="chk"><input type="checkbox" id="cmp"/> Compare two periods</label></div>
+   <div class="cgrp" id="periodB"><div class="clab" style="color:var(--teal)"><span class="sq" style="background:var(--teal)"></span>Period B — Start → End</div>
+    <div class="selwrap"><select id="bStart"></select><span class="arrow">→</span><select id="bEnd"></select></div></div>
+  </div>
+  <div class="cal">📅 <b>Eid al-Fitr (Lebaran):</b> ~10 Apr 2024 · ~31 Mar 2025 · ~20 Mar 2026. Use Compare to align the same <i>event</i>, not just the same calendar month. Data: Jun 2025 – Jun 2026 · June 2026 is month-to-date (MTD) and tagged accordingly.</div>
+  <nav class="navlinks" id="nav"></nav>
+ </div></div>
+</header>
+<main class="wrap" id="main"></main>
+<footer>GoWork Performance Command Center · Google Ads via Windsor.ai · Reactive sections recompute on the selected period; sections tagged <span class="snap">Latest full month</span> reflect May 2026 detail pulls.</footer>
+<script>
+const DATA={"months": [{"month": "2025-06", "spend": 14792140.149600001, "clicks": 4597.0, "impr": 66439.0, "conv": 146.25, "partial": false}, {"month": "2025-07", "spend": 16400313.402800001, "clicks": 5226.0, "impr": 62342.0, "conv": 167.25, "partial": false}, {"month": "2025-08", "spend": 16679461.677200004, "clicks": 6815.0, "impr": 91115.0, "conv": 196.876, "partial": false}, {"month": "2025-09", "spend": 20004538.632699993, "clicks": 9232.0, "impr": 135729.0, "conv": 199.1241, "partial": false}, {"month": "2025-10", "spend": 19387896.977599997, "clicks": 6684.0, "impr": 77656.0, "conv": 267.0, "partial": false}, {"month": "2025-11", "spend": 25042352.884099998, "clicks": 8420.0, "impr": 94808.0, "conv": 373.0, "partial": false}, {"month": "2025-12", "spend": 22231546.2156, "clicks": 25164.0, "impr": 279439.0, "conv": 317.5, "partial": false}, {"month": "2026-01", "spend": 22214099.0132, "clicks": 34921.0, "impr": 347107.0, "conv": 257.8834, "partial": false}, {"month": "2026-02", "spend": 13867714.424099999, "clicks": 8155.0, "impr": 72344.0, "conv": 465.1166, "partial": false}, {"month": "2026-03", "spend": 19593328.332799997, "clicks": 6574.0, "impr": 63326.0, "conv": 175.0, "partial": false}, {"month": "2026-04", "spend": 19853204.022099998, "clicks": 6770.0, "impr": 65196.0, "conv": 330.3676, "partial": false}, {"month": "2026-05", "spend": 11815005.3491, "clicks": 6412.0, "impr": 80339.0, "conv": 119.66669999999999, "partial": false}, {"month": "2026-06", "spend": 11596191.382400002, "clicks": 4056.0, "impr": 55044.0, "conv": 125.6579, "partial": true}], "camp": [{"month": "2025-06", "campaign": "[SEARCH] VO-JKT", "spend": 699191.543, "clicks": 93, "impr": 1827, "conv": 4}, {"month": "2025-07", "campaign": "[SEARCH] VO-JKT", "spend": 890061.9523, "clicks": 131, "impr": 2309, "conv": 0.25}, {"month": "2025-08", "campaign": "[SEARCH] VO-JKT", "spend": 740301.3944, "clicks": 148, "impr": 2879, "conv": 9}, {"month": "2025-09", "campaign": "[SEARCH] VO-JKT", "spend": 1041076.3425, "clicks": 178, "impr": 3097, "conv": 7}, {"month": "2025-10", "campaign": "[SEARCH] VO-JKT", "spend": 18496.318, "clicks": 5, "impr": 158, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-JKT", "spend": 1466339.8341, "clicks": 327, "impr": 4733, "conv": 12.5}, {"month": "2025-07", "campaign": "[SEARCH] PO-JKT", "spend": 1774378.6698, "clicks": 470, "impr": 6934, "conv": 12}, {"month": "2025-08", "campaign": "[SEARCH] PO-JKT", "spend": 1739888.8618, "clicks": 575, "impr": 8035, "conv": 12.7513}, {"month": "2025-09", "campaign": "[SEARCH] PO-JKT", "spend": 2038928.0114, "clicks": 617, "impr": 8335, "conv": 7}, {"month": "2025-10", "campaign": "[SEARCH] PO-JKT", "spend": 44642, "clicks": 10, "impr": 98, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-SBY", "spend": 677392.7777, "clicks": 122, "impr": 1607, "conv": 3}, {"month": "2025-07", "campaign": "[SEARCH] PO-SBY", "spend": 517077.0058, "clicks": 155, "impr": 1743, "conv": 6.5}, {"month": "2025-08", "campaign": "[SEARCH] PO-SBY", "spend": 508187.1224, "clicks": 128, "impr": 1750, "conv": 3}, {"month": "2025-09", "campaign": "[SEARCH] PO-SBY", "spend": 591807.8014, "clicks": 167, "impr": 2445, "conv": 2.8333}, {"month": "2025-10", "campaign": "[SEARCH] PO-SBY", "spend": 6982.1836, "clicks": 4, "impr": 81, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-BALI", "spend": 186204.5481, "clicks": 50, "impr": 389, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] PO-BALI", "spend": 259148.2198, "clicks": 66, "impr": 626, "conv": 1}, {"month": "2025-08", "campaign": "[SEARCH] PO-BALI", "spend": 356637.066, "clicks": 88, "impr": 1163, "conv": 5.5}, {"month": "2025-09", "campaign": "[SEARCH] PO-BALI", "spend": 647336.3842, "clicks": 119, "impr": 1522, "conv": 4.5}, {"month": "2025-10", "campaign": "[SEARCH] PO-BALI", "spend": 15447, "clicks": 3, "impr": 112, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-BSD", "spend": 275642, "clicks": 62, "impr": 693, "conv": 1}, {"month": "2025-07", "campaign": "[SEARCH] PO-BSD", "spend": 552803.3068, "clicks": 72, "impr": 970, "conv": 2}, {"month": "2025-08", "campaign": "[SEARCH] PO-BSD", "spend": 551269.395, "clicks": 104, "impr": 902, "conv": 0}, {"month": "2025-09", "campaign": "[SEARCH] PO-BSD", "spend": 647451.5423, "clicks": 100, "impr": 1182, "conv": 2}, {"month": "2025-10", "campaign": "[SEARCH] PO-BSD", "spend": 17744, "clicks": 3, "impr": 36, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] COMPETITOR", "spend": 910016.6082, "clicks": 121, "impr": 2163, "conv": 5.5}, {"month": "2025-07", "campaign": "[SEARCH] COMPETITOR", "spend": 929871.945, "clicks": 142, "impr": 2418, "conv": 5.5}, {"month": "2025-08", "campaign": "[SEARCH] COMPETITOR", "spend": 1043090.6338, "clicks": 200, "impr": 3060, "conv": 3.6667}, {"month": "2025-09", "campaign": "[SEARCH] COMPETITOR", "spend": 930822.9381, "clicks": 190, "impr": 2992, "conv": 5.1667}, {"month": "2025-10", "campaign": "[SEARCH] COMPETITOR", "spend": 1023531.0898, "clicks": 183, "impr": 2723, "conv": 3}, {"month": "2025-11", "campaign": "[SEARCH] COMPETITOR", "spend": 974039.6275, "clicks": 187, "impr": 2551, "conv": 7}, {"month": "2025-12", "campaign": "[SEARCH] COMPETITOR", "spend": 859719.1088, "clicks": 237, "impr": 3427, "conv": 7}, {"month": "2026-01", "campaign": "[SEARCH] COMPETITOR", "spend": 848912.311, "clicks": 322, "impr": 5446, "conv": 3}, {"month": "2026-02", "campaign": "[SEARCH] COMPETITOR", "spend": 619543.8, "clicks": 224, "impr": 2841, "conv": 4}, {"month": "2026-03", "campaign": "[SEARCH] COMPETITOR", "spend": 489399.5837, "clicks": 175, "impr": 2450, "conv": 3}, {"month": "2026-04", "campaign": "[SEARCH] COMPETITOR", "spend": 489393.6863, "clicks": 167, "impr": 1941, "conv": 9}, {"month": "2026-05", "campaign": "[SEARCH] COMPETITOR", "spend": 489426.7582, "clicks": 172, "impr": 2207, "conv": 1}, {"month": "2025-06", "campaign": "[SEARCH] CS-JKT", "spend": 397053.6701, "clicks": 167, "impr": 1609, "conv": 9.5}, {"month": "2025-07", "campaign": "[SEARCH] CS-JKT", "spend": 455351.0139, "clicks": 190, "impr": 1852, "conv": 5}, {"month": "2025-08", "campaign": "[SEARCH] CS-JKT", "spend": 455751.3516, "clicks": 288, "impr": 2333, "conv": 13}, {"month": "2025-09", "campaign": "[SEARCH] CS-JKT", "spend": 710108.7824, "clicks": 296, "impr": 3075, "conv": 13.5}, {"month": "2025-10", "campaign": "[SEARCH] CS-JKT", "spend": 973614.856, "clicks": 452, "impr": 5081, "conv": 19}, {"month": "2025-11", "campaign": "[SEARCH] CS-JKT", "spend": 886621.1731, "clicks": 606, "impr": 5273, "conv": 23}, {"month": "2025-12", "campaign": "[SEARCH] CS-JKT", "spend": 1168262.4039, "clicks": 590, "impr": 6243, "conv": 38}, {"month": "2026-01", "campaign": "[SEARCH] CS-JKT", "spend": 906685.0814, "clicks": 488, "impr": 4856, "conv": 14}, {"month": "2026-02", "campaign": "[SEARCH] CS-JKT", "spend": 564395.211, "clicks": 467, "impr": 5009, "conv": 21.5}, {"month": "2026-03", "campaign": "[SEARCH] CS-JKT", "spend": 1226422.4179, "clicks": 668, "impr": 6866, "conv": 19}, {"month": "2026-04", "campaign": "[SEARCH] CS-JKT", "spend": 1224045.1276, "clicks": 742, "impr": 7818, "conv": 57}, {"month": "2026-05", "campaign": "[SEARCH] CS-JKT", "spend": 970054.19, "clicks": 741, "impr": 9045, "conv": 8}, {"month": "2025-06", "campaign": "[SEARCH] CS-SBY", "spend": 163436.5374, "clicks": 53, "impr": 742, "conv": 2}, {"month": "2025-07", "campaign": "[SEARCH] CS-SBY", "spend": 206821.5896, "clicks": 81, "impr": 1095, "conv": 1}, {"month": "2025-08", "campaign": "[SEARCH] CS-SBY", "spend": 209557.8298, "clicks": 85, "impr": 1188, "conv": 3.5}, {"month": "2025-09", "campaign": "[SEARCH] CS-SBY", "spend": 311672.2825, "clicks": 133, "impr": 1941, "conv": 3.1667}, {"month": "2025-10", "campaign": "[SEARCH] CS-SBY", "spend": 309333.8171, "clicks": 140, "impr": 1982, "conv": 0}, {"month": "2025-11", "campaign": "[SEARCH] CS-SBY", "spend": 478506.2174, "clicks": 182, "impr": 2560, "conv": 4}, {"month": "2025-12", "campaign": "[SEARCH] CS-SBY", "spend": 324675.2224, "clicks": 170, "impr": 2512, "conv": 3}, {"month": "2026-01", "campaign": "[SEARCH] CS-SBY", "spend": 174236.7018, "clicks": 83, "impr": 1031, "conv": 2}, {"month": "2025-06", "campaign": "[SEARCH] CS-BALI", "spend": 115793.2327, "clicks": 64, "impr": 747, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] CS-BALI", "spend": 218118.5404, "clicks": 77, "impr": 1127, "conv": 1}, {"month": "2025-08", "campaign": "[SEARCH] CS-BALI", "spend": 201013.6812, "clicks": 101, "impr": 1411, "conv": 1}, {"month": "2025-09", "campaign": "[SEARCH] CS-BALI", "spend": 289143.8917, "clicks": 132, "impr": 2067, "conv": 2.5}, {"month": "2025-10", "campaign": "[SEARCH] CS-BALI", "spend": 304844.1543, "clicks": 164, "impr": 2090, "conv": 5}, {"month": "2025-11", "campaign": "[SEARCH] CS-BALI", "spend": 492083.3896, "clicks": 218, "impr": 2723, "conv": 3}, {"month": "2025-12", "campaign": "[SEARCH] CS-BALI", "spend": 339010.4573, "clicks": 170, "impr": 2561, "conv": 1}, {"month": "2026-01", "campaign": "[SEARCH] CS-BALI", "spend": 169645.1402, "clicks": 97, "impr": 1381, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] CS-MEDAN", "spend": 416613.0016, "clicks": 56, "impr": 779, "conv": 2}, {"month": "2025-07", "campaign": "[SEARCH] CS-MEDAN", "spend": 185367.1195, "clicks": 56, "impr": 610, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] CS-MEDAN", "spend": 208778.7684, "clicks": 73, "impr": 842, "conv": 1}, {"month": "2025-09", "campaign": "[SEARCH] CS-MEDAN", "spend": 307467, "clicks": 61, "impr": 791, "conv": 4.5}, {"month": "2025-10", "campaign": "[SEARCH] CS-MEDAN", "spend": 459673.5368, "clicks": 92, "impr": 1246, "conv": 3}, {"month": "2025-11", "campaign": "[SEARCH] CS-MEDAN", "spend": 481792.07, "clicks": 99, "impr": 1076, "conv": 5}, {"month": "2025-12", "campaign": "[SEARCH] CS-MEDAN", "spend": 340341.745, "clicks": 84, "impr": 1017, "conv": 1}, {"month": "2026-01", "campaign": "[SEARCH] CS-MEDAN", "spend": 187720.2828, "clicks": 38, "impr": 508, "conv": 2}, {"month": "2025-06", "campaign": "[SEARCH] PO-JAKSEL", "spend": 1739594.0005, "clicks": 182, "impr": 2649, "conv": 8.6667}, {"month": "2025-07", "campaign": "[SEARCH] PO-JAKSEL", "spend": 1828051.3919, "clicks": 254, "impr": 3916, "conv": 10}, {"month": "2025-08", "campaign": "[SEARCH] PO-JAKSEL", "spend": 1892731.437, "clicks": 414, "impr": 4950, "conv": 14.5}, {"month": "2025-09", "campaign": "[SEARCH] PO-JAKSEL", "spend": 2151994.6012, "clicks": 442, "impr": 5508, "conv": 14.4896}, {"month": "2025-10", "campaign": "[SEARCH] PO-JAKSEL", "spend": 49211.5682, "clicks": 8, "impr": 89, "conv": 1}, {"month": "2025-06", "campaign": "[SEARCH] PO-JAKPUS", "spend": 451993.778, "clicks": 47, "impr": 645, "conv": 2}, {"month": "2025-07", "campaign": "[SEARCH] PO-JAKPUS", "spend": 387326.9053, "clicks": 52, "impr": 1085, "conv": 1.5}, {"month": "2025-08", "campaign": "[SEARCH] PO-JAKPUS", "spend": 429242.1017, "clicks": 67, "impr": 1089, "conv": 5.5}, {"month": "2025-09", "campaign": "[SEARCH] PO-JAKPUS", "spend": 470607.2693, "clicks": 68, "impr": 1860, "conv": 1}, {"month": "2025-10", "campaign": "[SEARCH] PO-JAKPUS", "spend": 11757.9016, "clicks": 3, "impr": 61, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-JAKBAR", "spend": 342072.9778, "clicks": 77, "impr": 960, "conv": 3}, {"month": "2025-07", "campaign": "[SEARCH] PO-JAKBAR", "spend": 431724.2573, "clicks": 71, "impr": 1338, "conv": 3.5833}, {"month": "2025-08", "campaign": "[SEARCH] PO-JAKBAR", "spend": 606547.6696, "clicks": 100, "impr": 1853, "conv": 2.5}, {"month": "2025-09", "campaign": "[SEARCH] PO-JAKBAR", "spend": 691881.4949, "clicks": 117, "impr": 1613, "conv": 2.5}, {"month": "2025-10", "campaign": "[SEARCH] PO-JAKBAR", "spend": 27195, "clicks": 3, "impr": 35, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-JAKUT", "spend": 313795, "clicks": 44, "impr": 624, "conv": 1}, {"month": "2025-07", "campaign": "[SEARCH] PO-JAKUT", "spend": 260713.0363, "clicks": 51, "impr": 939, "conv": 4}, {"month": "2025-08", "campaign": "[SEARCH] PO-JAKUT", "spend": 353286.975, "clicks": 91, "impr": 1370, "conv": 7.6667}, {"month": "2025-09", "campaign": "[SEARCH] PO-JAKUT", "spend": 407748.417, "clicks": 96, "impr": 1445, "conv": 1}, {"month": "2025-10", "campaign": "[SEARCH] PO-JAKUT", "spend": 6445, "clicks": 3, "impr": 49, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] PO-MEDAN", "spend": 208757.4625, "clicks": 149, "impr": 1360, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] PO-MEDAN", "spend": 248119.8891, "clicks": 198, "impr": 1482, "conv": 3}, {"month": "2025-08", "campaign": "[SEARCH] PO-MEDAN", "spend": 255779.8978, "clicks": 127, "impr": 1064, "conv": 1}, {"month": "2025-09", "campaign": "[SEARCH] PO-MEDAN", "spend": 363591.7066, "clicks": 58, "impr": 634, "conv": 1.5}, {"month": "2025-10", "campaign": "[SEARCH] PO-MEDAN", "spend": 20063.5175, "clicks": 3, "impr": 38, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] VO-SBY", "spend": 355639.2307, "clicks": 38, "impr": 592, "conv": 1}, {"month": "2025-07", "campaign": "[SEARCH] VO-SBY", "spend": 451749.1394, "clicks": 59, "impr": 975, "conv": 1.5}, {"month": "2025-08", "campaign": "[SEARCH] VO-SBY", "spend": 447054.1742, "clicks": 78, "impr": 1020, "conv": 3}, {"month": "2025-09", "campaign": "[SEARCH] VO-SBY", "spend": 565209.5208, "clicks": 66, "impr": 1255, "conv": 1}, {"month": "2025-10", "campaign": "[SEARCH] VO-SBY", "spend": 11670, "clicks": 2, "impr": 76, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] VO-BALI", "spend": 92594.5052, "clicks": 32, "impr": 518, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] VO-BALI", "spend": 94340.0906, "clicks": 33, "impr": 570, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] VO-BALI", "spend": 92418.7513, "clicks": 33, "impr": 402, "conv": 0}, {"month": "2025-09", "campaign": "[SEARCH] VO-BALI", "spend": 214922.1051, "clicks": 37, "impr": 813, "conv": 0}, {"month": "2025-10", "campaign": "[SEARCH] VO-BALI", "spend": 11698, "clicks": 2, "impr": 25, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] VO-MEDAN", "spend": 126011.9671, "clicks": 22, "impr": 481, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] VO-MEDAN", "spend": 133413.8044, "clicks": 28, "impr": 541, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] VO-MEDAN", "spend": 132529.7676, "clicks": 31, "impr": 642, "conv": 1}, {"month": "2025-09", "campaign": "[SEARCH] VO-MEDAN", "spend": 227781.4148, "clicks": 27, "impr": 510, "conv": 0}, {"month": "2025-10", "campaign": "[SEARCH] VO-MEDAN", "spend": 8377, "clicks": 1, "impr": 25, "conv": 0}, {"month": "2025-06", "campaign": "[SEARCH] MR", "spend": 746500.996, "clicks": 259, "impr": 3645, "conv": 8.8333}, {"month": "2025-07", "campaign": "[SEARCH] MR", "spend": 930397.0941, "clicks": 285, "impr": 3812, "conv": 12}, {"month": "2025-08", "campaign": "[SEARCH] MR", "spend": 915072.7714, "clicks": 338, "impr": 4061, "conv": 7}, {"month": "2025-09", "campaign": "[SEARCH] MR", "spend": 893681.6208, "clicks": 324, "impr": 4404, "conv": 5}, {"month": "2025-10", "campaign": "[SEARCH] MR", "spend": 920736.6406, "clicks": 357, "impr": 3845, "conv": 10.5}, {"month": "2025-11", "campaign": "[SEARCH] MR", "spend": 1695992.3252, "clicks": 712, "impr": 7540, "conv": 19.9167}, {"month": "2025-12", "campaign": "[SEARCH] MR", "spend": 1418739.4714, "clicks": 708, "impr": 7914, "conv": 11}, {"month": "2026-01", "campaign": "[SEARCH] MR", "spend": 1429923.6977, "clicks": 644, "impr": 7147, "conv": 10.5167}, {"month": "2026-02", "campaign": "[SEARCH] MR", "spend": 1174235.4999, "clicks": 731, "impr": 6074, "conv": 42}, {"month": "2026-03", "campaign": "[SEARCH] MR", "spend": 1170690.8598, "clicks": 457, "impr": 5213, "conv": 0}, {"month": "2026-04", "campaign": "[SEARCH] MR", "spend": 1174912.7807, "clicks": 672, "impr": 7599, "conv": 25.5}, {"month": "2026-05", "campaign": "[SEARCH] MR", "spend": 649806.8759, "clicks": 392, "impr": 4970, "conv": 4}, {"month": "2025-06", "campaign": "[SEARCH] BRAND", "spend": 2965408.6541, "clicks": 1594, "impr": 8853, "conv": 59.4167}, {"month": "2025-07", "campaign": "[SEARCH] BRAND", "spend": 3450001.3272, "clicks": 1774, "impr": 10966, "conv": 82.2167}, {"month": "2025-08", "campaign": "[SEARCH] BRAND", "spend": 3069942.3465, "clicks": 1684, "impr": 9401, "conv": 66.6246}, {"month": "2025-09", "campaign": "[SEARCH] BRAND", "spend": 3244835.5377, "clicks": 1587, "impr": 9541, "conv": 72.2178}, {"month": "2025-10", "campaign": "[SEARCH] BRAND", "spend": 2939208.2097, "clicks": 1744, "impr": 9756, "conv": 97.5}, {"month": "2025-11", "campaign": "[SEARCH] BRAND", "spend": 3982485.5755, "clicks": 1745, "impr": 8681, "conv": 136.75}, {"month": "2025-12", "campaign": "[SEARCH] BRAND", "spend": 3223802.3347, "clicks": 2283, "impr": 12792, "conv": 128.75}, {"month": "2026-01", "campaign": "[SEARCH] BRAND", "spend": 3777797.2582, "clicks": 2058, "impr": 10983, "conv": 107.3667}, {"month": "2026-02", "campaign": "[SEARCH] BRAND", "spend": 2043980.3986, "clicks": 2048, "impr": 10111, "conv": 273.8}, {"month": "2026-03", "campaign": "[SEARCH] BRAND", "spend": 3512100.2012, "clicks": 2349, "impr": 14564, "conv": 61}, {"month": "2026-04", "campaign": "[SEARCH] BRAND", "spend": 3674347.7629, "clicks": 2399, "impr": 15316, "conv": 86.8676}, {"month": "2026-05", "campaign": "[SEARCH] BRAND", "spend": 1417016.2946, "clicks": 1309, "impr": 7672, "conv": 56.6667}, {"month": "2025-06", "campaign": "[SEARCH] EVENT SPACE", "spend": 685529.843, "clicks": 126, "impr": 1630, "conv": 3.8333}, {"month": "2025-07", "campaign": "[SEARCH] EVENT SPACE", "spend": 804977.5596, "clicks": 176, "impr": 2225, "conv": 4}, {"month": "2025-08", "campaign": "[SEARCH] EVENT SPACE", "spend": 729829.6323, "clicks": 218, "impr": 2612, "conv": 10.6667}, {"month": "2025-09", "campaign": "[SEARCH] EVENT SPACE", "spend": 756309.3033, "clicks": 334, "impr": 2607, "conv": 18.0833}, {"month": "2025-10", "campaign": "[SEARCH] EVENT SPACE", "spend": 854946.8939, "clicks": 377, "impr": 2056, "conv": 34}, {"month": "2025-11", "campaign": "[SEARCH] EVENT SPACE", "spend": 1378034.3108, "clicks": 480, "impr": 4725, "conv": 22.8333}, {"month": "2025-12", "campaign": "[SEARCH] EVENT SPACE", "spend": 1205145.0476, "clicks": 522, "impr": 7075, "conv": 11.75}, {"month": "2026-01", "campaign": "[SEARCH] EVENT SPACE", "spend": 1100000.6822, "clicks": 495, "impr": 4503, "conv": 14}, {"month": "2026-02", "campaign": "[SEARCH] EVENT SPACE", "spend": 779994.3666, "clicks": 368, "impr": 3542, "conv": 16.9567}, {"month": "2026-03", "campaign": "[SEARCH] EVENT SPACE", "spend": 1044878.7972, "clicks": 391, "impr": 4757, "conv": 2}, {"month": "2026-04", "campaign": "[SEARCH] EVENT SPACE", "spend": 1102014.3746, "clicks": 490, "impr": 6874, "conv": 2}, {"month": "2026-05", "campaign": "[SEARCH] EVENT SPACE", "spend": 541724.1295, "clicks": 233, "impr": 4030, "conv": 4}, {"month": "2025-06", "campaign": "[SEARCH] - PO JAKSEL JAKBAR TACTICAL", "spend": 212720.1783, "clicks": 143, "impr": 1404, "conv": 9.5}, {"month": "2025-07", "campaign": "[SEARCH] - PO JAKSEL JAKBAR TACTICAL", "spend": 195446.2069, "clicks": 141, "impr": 1296, "conv": 4}, {"month": "2025-06", "campaign": "SEARCH / VO JAKARTA / BIDDING KEYWORD", "spend": 394893.1212, "clicks": 183, "impr": 4864, "conv": 4}, {"month": "2025-07", "campaign": "SEARCH / VO JAKARTA / BIDDING KEYWORD", "spend": 391022.5397, "clicks": 190, "impr": 2187, "conv": 3}, {"month": "2025-08", "campaign": "SEARCH / VO JAKARTA / BIDDING KEYWORD", "spend": 364287.1126, "clicks": 144, "impr": 1380, "conv": 2}, {"month": "2025-09", "campaign": "SEARCH / VO JAKARTA / BIDDING KEYWORD", "spend": 241754.1547, "clicks": 74, "impr": 1182, "conv": 1}, {"month": "2025-06", "campaign": "SEARCH-PO JKT / BIDDING CAMPAIGN", "spend": 336557.7568, "clicks": 184, "impr": 1688, "conv": 3}, {"month": "2025-07", "campaign": "SEARCH-PO JKT / BIDDING CAMPAIGN", "spend": 334401.1329, "clicks": 190, "impr": 1876, "conv": 3}, {"month": "2025-08", "campaign": "SEARCH-PO JKT / BIDDING CAMPAIGN", "spend": 334220.982, "clicks": 219, "impr": 2247, "conv": 5}, {"month": "2025-09", "campaign": "SEARCH-PO JKT / BIDDING CAMPAIGN", "spend": 223310.5195, "clicks": 115, "impr": 1330, "conv": 2}, {"month": "2025-06", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 24379.8321, "clicks": 57, "impr": 305, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 132895.403, "clicks": 646, "impr": 13573, "conv": 0}, {"month": "2025-09", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 435608.5305, "clicks": 2912, "impr": 64129, "conv": 0}, {"month": "2025-10", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 1047569.7865, "clicks": 564, "impr": 11054, "conv": 12}, {"month": "2025-11", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 1414157.5807, "clicks": 613, "impr": 10505, "conv": 15}, {"month": "2025-12", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 1088872.0641, "clicks": 470, "impr": 8651, "conv": 13}, {"month": "2026-01", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 1034670.9226, "clicks": 507, "impr": 7737, "conv": 11}, {"month": "2026-02", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 784165.7321, "clicks": 191, "impr": 3462, "conv": 14}, {"month": "2026-03", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 813473.2117, "clicks": 143, "impr": 2714, "conv": 4}, {"month": "2026-04", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 781560.1556, "clicks": 229, "impr": 3672, "conv": 35}, {"month": "2026-05", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 780069.6602, "clicks": 259, "impr": 4960, "conv": 8}, {"month": "2025-06", "campaign": "PO JKT  (TOP KEYWORD)", "spend": 488007.0934, "clicks": 345, "impr": 20932, "conv": 2.5}, {"month": "2025-07", "campaign": "PO JKT  (TOP KEYWORD)", "spend": 368721.8357, "clicks": 254, "impr": 8580, "conv": 1.2}, {"month": "2025-08", "campaign": "PO JKT  (TOP KEYWORD)", "spend": 300384.1682, "clicks": 302, "impr": 10375, "conv": 3}, {"month": "2025-09", "campaign": "PO JKT  (TOP KEYWORD)", "spend": 196889.6535, "clicks": 147, "impr": 2243, "conv": 2}, {"month": "2025-07", "campaign": "[SEARCH] - PO Jakbar Tactical", "spend": 53543.1831, "clicks": 17, "impr": 257, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] - PO Jakbar Tactical", "spend": 304741.0559, "clicks": 279, "impr": 3700, "conv": 8}, {"month": "2025-09", "campaign": "[SEARCH] - PO Jakbar Tactical", "spend": 790013.5165, "clicks": 450, "impr": 3995, "conv": 17.6667}, {"month": "2025-10", "campaign": "[SEARCH] - PO Jakbar Tactical", "spend": 50213.5593, "clicks": 18, "impr": 140, "conv": 0}, {"month": "2025-07", "campaign": "[SEARCH] - PO Jaksel Tactical", "spend": 47364.6464, "clicks": 13, "impr": 613, "conv": 0}, {"month": "2025-08", "campaign": "[SEARCH] - PO Jaksel Tactical", "spend": 304021.3267, "clicks": 254, "impr": 7813, "conv": 7}, {"month": "2025-09", "campaign": "[SEARCH] - PO Jaksel Tactical", "spend": 612584.29, "clicks": 385, "impr": 5213, "conv": 7.5}, {"month": "2025-10", "campaign": "[SEARCH] - PO Jaksel Tactical", "spend": 35106.142, "clicks": 25, "impr": 269, "conv": 1}, {"month": "2025-10", "campaign": "[SEARCH] VO - JKT / AON", "spend": 749004.9526, "clicks": 202, "impr": 3458, "conv": 12.1667}, {"month": "2025-11", "campaign": "[SEARCH] VO - JKT / AON", "spend": 711294.6623, "clicks": 195, "impr": 2930, "conv": 11}, {"month": "2025-12", "campaign": "[SEARCH] VO - JKT / AON", "spend": 1138666.687, "clicks": 263, "impr": 4279, "conv": 11}, {"month": "2026-01", "campaign": "[SEARCH] VO - JKT / AON", "spend": 855315.8787, "clicks": 181, "impr": 2728, "conv": 8}, {"month": "2026-02", "campaign": "[SEARCH] VO - JKT / AON", "spend": 435335.7922, "clicks": 116, "impr": 1564, "conv": 3}, {"month": "2026-03", "campaign": "[SEARCH] VO - JKT / AON", "spend": 516643.231, "clicks": 124, "impr": 1708, "conv": 1}, {"month": "2026-04", "campaign": "[SEARCH] VO - JKT / AON", "spend": 507104.2088, "clicks": 137, "impr": 1612, "conv": 5}, {"month": "2026-05", "campaign": "[SEARCH] VO - JKT / AON", "spend": 497145.2493, "clicks": 168, "impr": 2773, "conv": 5}, {"month": "2025-10", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 598091.5289, "clicks": 128, "impr": 1631, "conv": 5}, {"month": "2025-11", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 706856.9997, "clicks": 128, "impr": 1654, "conv": 5}, {"month": "2025-12", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 478894.7451, "clicks": 100, "impr": 1242, "conv": 5}, {"month": "2026-01", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 848949.7826, "clicks": 164, "impr": 1736, "conv": 9}, {"month": "2026-02", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 395943.2797, "clicks": 81, "impr": 1085, "conv": 4}, {"month": "2026-03", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 492007.9076, "clicks": 84, "impr": 915, "conv": 3}, {"month": "2026-04", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 509057.4679, "clicks": 110, "impr": 1246, "conv": 4}, {"month": "2026-05", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 509885.1197, "clicks": 167, "impr": 1381, "conv": 6}, {"month": "2025-10", "campaign": "[SEARCH] PO - JKT / AON", "spend": 2771856.6053, "clicks": 858, "impr": 13505, "conv": 23}, {"month": "2025-11", "campaign": "[SEARCH] PO - JKT / AON", "spend": 2744547.7661, "clicks": 1361, "impr": 19681, "conv": 35.25}, {"month": "2025-12", "campaign": "[SEARCH] PO - JKT / AON", "spend": 2353541.9783, "clicks": 2061, "impr": 26518, "conv": 32}, {"month": "2026-01", "campaign": "[SEARCH] PO - JKT / AON", "spend": 4297403.9152, "clicks": 2627, "impr": 30749, "conv": 31.9346}, {"month": "2026-02", "campaign": "[SEARCH] PO - JKT / AON", "spend": 2149287.8859, "clicks": 2078, "impr": 17855, "conv": 29.5266}, {"month": "2026-03", "campaign": "[SEARCH] PO - JKT / AON", "spend": 4165916.7058, "clicks": 579, "impr": 5795, "conv": 46}, {"month": "2026-04", "campaign": "[SEARCH] PO - JKT / AON", "spend": 4109695.8314, "clicks": 530, "impr": 5091, "conv": 36}, {"month": "2026-05", "campaign": "[SEARCH] PO - JKT / AON", "spend": 2028809.7815, "clicks": 1609, "impr": 25013, "conv": 9.5}, {"month": "2025-10", "campaign": "[SEARCH] VO - JKT / TACTICAL", "spend": 772793.9869, "clicks": 183, "impr": 2955, "conv": 7.3333}, {"month": "2025-11", "campaign": "[SEARCH] VO - JKT / TACTICAL", "spend": 704829.1078, "clicks": 157, "impr": 2444, "conv": 4}, {"month": "2025-12", "campaign": "[SEARCH] VO - JKT / TACTICAL", "spend": 523323.9549, "clicks": 175, "impr": 2555, "conv": 5}, {"month": "2026-01", "campaign": "[SEARCH] VO - JKT / TACTICAL", "spend": 187886.982, "clicks": 50, "impr": 790, "conv": 0}, {"month": "2025-10", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2530854.0411, "clicks": 495, "impr": 6576, "conv": 11.5}, {"month": "2025-11", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2758200.1081, "clicks": 562, "impr": 7894, "conv": 27}, {"month": "2025-12", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2315877.0665, "clicks": 467, "impr": 7025, "conv": 9}, {"month": "2026-01", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2817747.4227, "clicks": 472, "impr": 6260, "conv": 9}, {"month": "2026-02", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 1592970.3897, "clicks": 227, "impr": 2342, "conv": 13}, {"month": "2026-03", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2043338.5095, "clicks": 223, "impr": 2058, "conv": 13}, {"month": "2026-04", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 2070929.407, "clicks": 258, "impr": 2357, "conv": 25}, {"month": "2026-05", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 986538.8902, "clicks": 237, "impr": 2271, "conv": 3}, {"month": "2025-10", "campaign": "[SEARCH] PO - JKT / TACTICAL", "spend": 2796787.6879, "clicks": 652, "impr": 8406, "conv": 22}, {"month": "2025-11", "campaign": "[SEARCH] PO - JKT / TACTICAL", "spend": 2743283.4104, "clicks": 790, "impr": 11029, "conv": 25.25}, {"month": "2025-12", "campaign": "[SEARCH] PO - JKT / TACTICAL", "spend": 2229524.1545, "clicks": 670, "impr": 10043, "conv": 17}, {"month": "2026-01", "campaign": "[SEARCH] PO - JKT / TACTICAL", "spend": 551872.7764, "clicks": 147, "impr": 2270, "conv": 6.0654}, {"month": "2025-11", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 1894092.6795, "clicks": 185, "impr": 1561, "conv": 17}, {"month": "2025-12", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 1638136.2835, "clicks": 164, "impr": 1096, "conv": 15}, {"month": "2026-01", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 799123.8338, "clicks": 108, "impr": 740, "conv": 10}, {"month": "2026-02", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 298741.0803, "clicks": 41, "impr": 595, "conv": 0.5}, {"month": "2026-03", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 784072.7084, "clicks": 83, "impr": 862, "conv": 4}, {"month": "2026-04", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 828923.4138, "clicks": 62, "impr": 723, "conv": 5}, {"month": "2026-05", "campaign": "[SEARCH] VO - OVERSEAS", "spend": 209213.5519, "clicks": 22, "impr": 356, "conv": 0}, {"month": "2025-11", "campaign": "[SEARCH] LIVE STREAMING", "spend": 995535.8804, "clicks": 200, "impr": 1981, "conv": 12}, {"month": "2025-12", "campaign": "[SEARCH] LIVE STREAMING", "spend": 919052.9482, "clicks": 184, "impr": 1842, "conv": 9}, {"month": "2026-01", "campaign": "[SEARCH] LIVE STREAMING", "spend": 1063865.7423, "clicks": 186, "impr": 1629, "conv": 17}, {"month": "2026-02", "campaign": "[SEARCH] LIVE STREAMING", "spend": 779521.6319, "clicks": 127, "impr": 1028, "conv": 3}, {"month": "2026-03", "campaign": "[SEARCH] LIVE STREAMING", "spend": 779188.524, "clicks": 146, "impr": 1063, "conv": 8}, {"month": "2026-04", "campaign": "[SEARCH] LIVE STREAMING", "spend": 808946.9433, "clicks": 164, "impr": 1045, "conv": 15}, {"month": "2026-05", "campaign": "[SEARCH] LIVE STREAMING", "spend": 783553.8537, "clicks": 166, "impr": 1432, "conv": 1}, {"month": "2025-12", "campaign": "[DEMAND GEN] YOUTUBE - Start Your Next Chapter", "spend": 665960.5424, "clicks": 15846, "impr": 172647, "conv": 0}, {"month": "2026-01", "campaign": "[DEMAND GEN] YOUTUBE - Start Your Next Chapter", "spend": 832372.8108, "clicks": 26115, "impr": 254557, "conv": 0}, {"month": "2026-01", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 329967.7908, "clicks": 139, "impr": 2056, "conv": 3}, {"month": "2026-02", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 539587.4985, "clicks": 299, "impr": 4042, "conv": 13}, {"month": "2026-03", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 496459.7543, "clicks": 271, "impr": 3042, "conv": 8}, {"month": "2026-04", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 514073.6123, "clicks": 291, "impr": 4451, "conv": 8}, {"month": "2026-05", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 487063.5649, "clicks": 359, "impr": 5685, "conv": 1}, {"month": "2026-02", "campaign": "[SEARCH] ENTERPRISE - JKT", "spend": 1710011.8577, "clicks": 1157, "impr": 12794, "conv": 26.8333}, {"month": "2026-03", "campaign": "[SEARCH] ENTERPRISE - JKT", "spend": 2058735.9207, "clicks": 881, "impr": 11319, "conv": 3}, {"month": "2026-04", "campaign": "[SEARCH] ENTERPRISE - JKT", "spend": 2058199.2499, "clicks": 519, "impr": 5451, "conv": 17}, {"month": "2026-05", "campaign": "[SEARCH] ENTERPRISE - JKT", "spend": 1464697.4295, "clicks": 578, "impr": 8544, "conv": 12.5}, {"month": "2026-06", "campaign": "[SEARCH] COMPETITOR", "spend": 309249.8498, "clicks": 119, "impr": 1283, "conv": 0}, {"month": "2026-06", "campaign": "[SEARCH] CS-JKT", "spend": 7811.4355, "clicks": 4, "impr": 42, "conv": 0}, {"month": "2026-06", "campaign": "[SEARCH] MR", "spend": 2590, "clicks": 1, "impr": 31, "conv": 0}, {"month": "2026-06", "campaign": "[SEARCH] BRAND", "spend": 3721197.3104, "clicks": 1436, "impr": 10591, "conv": 60.4751}, {"month": "2026-06", "campaign": "[SEARCH] EVENT SPACE", "spend": 493372.6747, "clicks": 124, "impr": 2168, "conv": 12}, {"month": "2026-06", "campaign": "[SEARCH] BUSINESS SERVICE", "spend": 493449.3183, "clicks": 137, "impr": 2372, "conv": 8}, {"month": "2026-06", "campaign": "[SEARCH] VO - JKT / AON", "spend": 599249.5722, "clicks": 114, "impr": 2172, "conv": 1}, {"month": "2026-06", "campaign": "[SEARCH] VO - SBY/BALI/MDN", "spend": 605509.5592, "clicks": 99, "impr": 1085, "conv": 3}, {"month": "2026-06", "campaign": "[SEARCH] PO - JKT / AON", "spend": 684805.5223, "clicks": 343, "impr": 6991, "conv": 12}, {"month": "2026-06", "campaign": "[SEARCH] PO - SBY/BALI/MDN", "spend": 898871.4759, "clicks": 114, "impr": 1201, "conv": 4}, {"month": "2026-06", "campaign": "[SEARCH] LIVE STREAMING", "spend": 224531.37, "clicks": 52, "impr": 373, "conv": 10}, {"month": "2026-06", "campaign": "[SEARCH] CS - SBY/BALI/MDN", "spend": 6460, "clicks": 4, "impr": 64, "conv": 0}, {"month": "2026-06", "campaign": "[SEARCH] ENTERPRISE - JKT", "spend": 1492428.4034, "clicks": 443, "impr": 10160, "conv": 10.1683}, {"month": "2026-06", "campaign": "[SEARCH] CS Daily - SBY/BALI/MDN", "spend": 475019.8899, "clicks": 152, "impr": 3501, "conv": 0}, {"month": "2026-06", "campaign": "[SEARCH] CS Daily - JKT", "spend": 1108192.0812, "clicks": 622, "impr": 8013, "conv": 5.0145}, {"month": "2026-06", "campaign": "[SEARCH] MR Daily", "spend": 473452.9196, "clicks": 292, "impr": 4997, "conv": 0}], "adg_may": [{"campaign": "[SEARCH] COMPETITOR", "adgroup": "COMPETITOR [EN]", "spend": 219413.1094, "clicks": 81, "impressions": 990, "conv": 0}, {"campaign": "[SEARCH] CS-JKT", "adgroup": "CS - General - EN", "spend": 637469.7475, "clicks": 468, "impressions": 4552, "conv": 3.6667}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-EN", "spend": 290313.541, "clicks": 201, "impressions": 862, "conv": 7.5}, {"campaign": "[SEARCH] COMPETITOR", "adgroup": "COMPETITOR [ID]", "spend": 270013.6488, "clicks": 91, "impressions": 1217, "conv": 1}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-ID", "spend": 592514.9198, "clicks": 500, "impressions": 2197, "conv": 23.5}, {"campaign": "[SEARCH] BUSINESS SERVICE", "adgroup": "BS - LEGAL BISNIS", "spend": 527187.043, "clicks": 161, "impressions": 3164, "conv": 3}, {"campaign": "[SEARCH] VO - SBY/BALI/MDN", "adgroup": "VO - MDN", "spend": 191602.0216, "clicks": 66, "impressions": 446, "conv": 2}, {"campaign": "[SEARCH] BUSINESS SERVICE", "adgroup": "BS - PAJAK & AKUNTING", "spend": 252882.6171, "clicks": 98, "impressions": 1796, "conv": 5}, {"campaign": "[SEARCH] VO - SBY/BALI/MDN", "adgroup": "VO - SBY", "spend": 147143.5791, "clicks": 42, "impressions": 373, "conv": 2}, {"campaign": "[SEARCH] LIVE STREAMING", "adgroup": "LIVE - GENERAL", "spend": 783553.8537, "clicks": 166, "impressions": 1432, "conv": 1}, {"campaign": "[SEARCH] VO - SBY/BALI/MDN", "adgroup": "VO - BALI", "spend": 171139.519, "clicks": 59, "impressions": 562, "conv": 2}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-LOKASI", "spend": 56099.5409, "clicks": 74, "impressions": 505, "conv": 5.1667}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-KOTA", "spend": 154914.0101, "clicks": 164, "impressions": 1288, "conv": 4.5}, {"campaign": "[SEARCH] CS - SBY/BALI/MDN", "adgroup": "CS - SBY", "spend": 249899.2679, "clicks": 176, "impressions": 2472, "conv": 0.5}, {"campaign": "[SEARCH] CS - SBY/BALI/MDN", "adgroup": "CS - MDN", "spend": 57901.298, "clicks": 46, "impressions": 531, "conv": 0}, {"campaign": "[SEARCH] CS - SBY/BALI/MDN", "adgroup": "CS - BALI", "spend": 179262.9989, "clicks": 137, "impressions": 2682, "conv": 0.5}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-KANTOR", "spend": 236006.4624, "clicks": 267, "impressions": 1948, "conv": 15.3333}, {"campaign": "[SEARCH] CS-JKT", "adgroup": "CS - General - ID", "spend": 332584.4424, "clicks": 273, "impressions": 4493, "conv": 4.3333}, {"campaign": "[SEARCH] BRAND", "adgroup": "BRAND-PRODUK", "spend": 87167.8205, "clicks": 103, "impressions": 872, "conv": 0.6667}, {"campaign": "[SEARCH] MR", "adgroup": "MR-General-EN", "spend": 140605.7415, "clicks": 83, "impressions": 1252, "conv": 0}, {"campaign": "[SEARCH] MR", "adgroup": "MR-General-ID", "spend": 509201.1344, "clicks": 309, "impressions": 3718, "conv": 4}, {"campaign": "[SEARCH] EVENT SPACE", "adgroup": "EVENT-EN", "spend": 181114.1636, "clicks": 78, "impressions": 1973, "conv": 1.6667}, {"campaign": "[SEARCH] EVENT SPACE", "adgroup": "EVENT-ID", "spend": 360609.9659, "clicks": 155, "impressions": 2057, "conv": 2.3333}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - JAKPUS", "spend": 142828.4719, "clicks": 124, "impressions": 1567, "conv": 1}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - JAKUT", "spend": 37446.5599, "clicks": 40, "impressions": 336, "conv": 0}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - BSD", "spend": 63236.2989, "clicks": 52, "impressions": 735, "conv": 0}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - JAKBAR", "spend": 89649.9016, "clicks": 65, "impressions": 739, "conv": 0}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - GENERAL", "spend": 1165483.8472, "clicks": 980, "impressions": 14600, "conv": 5.5}, {"campaign": "[SEARCH] PO - JKT / AON", "adgroup": "PO AON - JAKSEL", "spend": 530164.702, "clicks": 348, "impressions": 7036, "conv": 3}, {"campaign": "[SEARCH] VO - OVERSEAS", "adgroup": "VO OVERSEAS - GENERAL", "spend": 134122.5954, "clicks": 11, "impressions": 159, "conv": 0}, {"campaign": "[SEARCH] VO - OVERSEAS", "adgroup": "VO OVERSEAS - TACTICAL", "spend": 75090.9565, "clicks": 11, "impressions": 197, "conv": 0}, {"campaign": "[SEARCH] VO - JKT / AON", "adgroup": "VO AON - GENERAL", "spend": 497145.2493, "clicks": 168, "impressions": 2773, "conv": 5}, {"campaign": "[SEARCH] ENTERPRISE - JKT", "adgroup": "Enterprise JKT - EN", "spend": 401397.5222, "clicks": 161, "impressions": 2465, "conv": 6}, {"campaign": "[SEARCH] ENTERPRISE - JKT", "adgroup": "Enterprise JKT - ID", "spend": 1063299.9073, "clicks": 417, "impressions": 6079, "conv": 6.5}, {"campaign": "[SEARCH] PO - SBY/BALI/MDN", "adgroup": "PO - BALI", "spend": 406897.7268, "clicks": 91, "impressions": 894, "conv": 1}, {"campaign": "[SEARCH] PO - SBY/BALI/MDN", "adgroup": "PO - SBY", "spend": 443933.3418, "clicks": 85, "impressions": 756, "conv": 2}, {"campaign": "[SEARCH] PO - SBY/BALI/MDN", "adgroup": "PO - MDN", "spend": 135707.8216, "clicks": 61, "impressions": 621, "conv": 0}], "dev_may": [{"device": "DESKTOP", "spend": 4481698.9195, "clicks": 1558, "impressions": 24078, "conv": 58.3333}, {"device": "MOBILE", "spend": 7267730.0538, "clicks": 4822, "impressions": 55874, "conv": 61.3333}, {"device": "TABLET", "spend": 65576.3756, "clicks": 32, "impressions": 387, "conv": 0}], "mt_may": [{"match": "EXACT", "spend": 2282682.2095, "clicks": 1548, "impressions": 11871, "conv": 41.6667}, {"match": "PHRASE", "spend": 3985694.0843, "clicks": 2153, "impressions": 29199, "conv": 34.6667}, {"match": "BROAD", "spend": 4119543.0419, "clicks": 1728, "impressions": 24807, "conv": 39.6667}, {"match": "AI_MAX", "spend": 624085.5441, "clicks": 688, "impressions": 10081, "conv": 2}], "st_may": [{"term": "gowork", "spend": 758487.6488, "clicks": 449, "impressions": 1581, "conv": 20}, {"term": "go work", "spend": 146908.7871, "clicks": 128, "impressions": 450, "conv": 4}, {"term": "coworking space near me", "spend": 91256.703, "clicks": 89, "impressions": 450, "conv": 0}, {"term": "gowork pacific place", "spend": 32957.984, "clicks": 40, "impressions": 151, "conv": 0.3333}, {"term": "co working space near me", "spend": 25730.661, "clicks": 18, "impressions": 73, "conv": 0}, {"term": "meeting room rental jakarta", "spend": 13094.6402, "clicks": 32, "impressions": 111, "conv": 0}, {"term": "gowork central park", "spend": 12697.9456, "clicks": 14, "impressions": 53, "conv": 0}, {"term": "coworking space", "spend": 4606, "clicks": 4, "impressions": 7, "conv": 0}, {"term": "gowork kemang", "spend": 3462, "clicks": 6, "impressions": 17, "conv": 1}, {"term": "jalan jenderal sudirman 86 ... sahid sudirman center", "spend": 3439.1782, "clicks": 33, "impressions": 74, "conv": 0}, {"term": "gowork fatmawati", "spend": 2264.2354, "clicks": 5, "impressions": 12, "conv": 0}, {"term": "co working space surabaya", "spend": 2233.3744, "clicks": 4, "impressions": 8, "conv": 0}, {"term": "gowork menara rajawali", "spend": 1948.7044, "clicks": 4, "impressions": 18, "conv": 0}, {"term": "go work bsd", "spend": 1790, "clicks": 4, "impressions": 7, "conv": 0}, {"term": "innovative office spaces", "spend": 1607, "clicks": 4, "impressions": 13, "conv": 0}, {"term": "asg tower", "spend": 726, "clicks": 4, "impressions": 13, "conv": 0}, {"term": "gowork pondok indah", "spend": 697.3573, "clicks": 4, "impressions": 7, "conv": 0}, {"term": "atria sudirman", "spend": 648, "clicks": 7, "impressions": 9, "conv": 0}, {"term": "gowork kemang x", "spend": 290, "clicks": 4, "impressions": 12, "conv": 0}, {"term": "sampoerna strategic square", "spend": 260, "clicks": 4, "impressions": 10, "conv": 0}], "camp_may_is": [{"campaign": "[SEARCH] COMPETITOR", "is": 0.1084, "lb": 0.7746, "lr": 0.1649, "spend": 489426.7582, "clicks": 172, "impr": 2207, "conv": 1}, {"campaign": "[SEARCH] CS-JKT", "is": 0.1489, "lb": 0.1457, "lr": 0.7035, "spend": 970054.19, "clicks": 741, "impr": 9045, "conv": 8}, {"campaign": "[SEARCH] BRAND", "is": 0.3437, "lb": 0.3369, "lr": 0.2995, "spend": 1417016.2946, "clicks": 1309, "impr": 7672, "conv": 56.6667}, {"campaign": "[SEARCH] BUSINESS SERVICE", "is": 0.0999, "lb": 0.1591, "lr": 0.7767, "spend": 780069.6602, "clicks": 259, "impr": 4960, "conv": 8}, {"campaign": "[SEARCH] VO - SBY/BALI/MDN", "is": 0.1668, "lb": 0.2437, "lr": 0.5964, "spend": 509885.1197, "clicks": 167, "impr": 1381, "conv": 6}, {"campaign": "[SEARCH] LIVE STREAMING", "is": 0.1079, "lb": 0.3368, "lr": 0.5737, "spend": 783553.8537, "clicks": 166, "impr": 1432, "conv": 1}, {"campaign": "[SEARCH] CS - SBY/BALI/MDN", "is": 0.1042, "lb": 0.2456, "lr": 0.6616, "spend": 487063.5649, "clicks": 359, "impr": 5685, "conv": 1}, {"campaign": "[SEARCH] MR", "is": 0.1114, "lb": 0.3813, "lr": 0.5195, "spend": 649806.8759, "clicks": 392, "impr": 4970, "conv": 4}, {"campaign": "[SEARCH] EVENT SPACE", "is": 0.1041, "lb": 0.47, "lr": 0.4379, "spend": 541724.1295, "clicks": 233, "impr": 4030, "conv": 4}, {"campaign": "[SEARCH] VO - JKT / AON", "is": 0.1066, "lb": 0.2033, "lr": 0.7007, "spend": 497145.2493, "clicks": 168, "impr": 2773, "conv": 5}, {"campaign": "[SEARCH] PO - JKT / AON", "is": 0.126, "lb": 0.195, "lr": 0.6839, "spend": 2028809.7815, "clicks": 1609, "impr": 25013, "conv": 9.5}, {"campaign": "[SEARCH] PO - SBY/BALI/MDN", "is": 0.161, "lb": 0.3369, "lr": 0.5113, "spend": 986538.8902, "clicks": 237, "impr": 2271, "conv": 3}, {"campaign": "[SEARCH] VO - OVERSEAS", "is": 0.1007, "lb": 0.0643, "lr": 0.8509, "spend": 209213.5519, "clicks": 22, "impr": 356, "conv": 0}, {"campaign": "[SEARCH] ENTERPRISE - JKT", "is": 0.1471, "lb": 0.2608, "lr": 0.5813, "spend": 1464697.4295, "clicks": 578, "impr": 8544, "conv": 12.5}], "mtd_cmp": {"month": "2026-06", "cur_span": "Jun 1\u201319 2026", "days": 19, "prevmonth": {"label": "May 1\u201319 2026", "spend": 8458368.7279, "clicks": 4422, "impr": 54299, "conv": 75.3333}, "yoy": {"label": "Jun 1\u201319 2025", "spend": 9703680.193, "clicks": 2936, "impr": 37758, "conv": 93}}, "account": "626-115-8335 \u00b7 Go-Rework"};
+const MS=DATA.months, CAMP=DATA.camp;
+const idr=n=>'Rp '+(Math.abs(n)>=1e9?(n/1e9).toFixed(2)+'B':Math.abs(n)>=1e6?(n/1e6).toFixed(2)+'M':Math.abs(n)>=1e3?(n/1e3).toFixed(0)+'K':Math.round(n));
+const f0=n=>Math.round(n).toLocaleString('en-US'),f1=n=>n.toFixed(1),f2=n=>n.toFixed(2);
+const pct=(a,b)=>b?((a-b)/b*100):0;
+const mname=k=>{const[y,m]=k.split('-');return ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m]+" '"+y.slice(2);};
+const isPartial=i=>!!(MS[i]&&MS[i].partial);
+const mlabel=(k,i)=>mname(k)+(isPartial(i)?' (MTD)':'');
+const C={clay:'#c2603f',olive:'#7a8c54',mustard:'#d39a45',teal:'#5b7d6f',sand:'#cdb38a',mut:'#8d7d68',line:'#e0d2bb'};
+Chart.defaults.color=C.mut;Chart.defaults.borderColor=C.line;Chart.defaults.font.family="Inter,system-ui";
+const PALETTE=[C.clay,C.olive,C.mustard,C.teal,C.sand,'#a94e30','#566b3f','#9a6b1f'];
+
+function prod(name){const n=name.replace(/^\[SEARCH\]\s*/,'').replace(/^\[DEMAND GEN\]\s*/,'').replace(/^SEARCH[\s\/-]*/i,'').trim();
+ const u=n.toUpperCase();
+ if(u.startsWith('PO')||u.includes('PO ')||u.includes('PO-')||u.includes('PO JKT')||u.includes('PO JAK')||u.includes('PO JAK'))return 'Private Office (PO)';
+ if(u.startsWith('VO'))return 'Virtual Office (VO)';
+ if(u.startsWith('CS'))return 'Coworking Space (CS)';
+ if(u.startsWith('MR'))return 'Meeting Room (MR)';
+ if(u.startsWith('ENTERPRISE'))return 'Enterprise';
+ if(u.startsWith('BRAND'))return 'Brand';
+ if(u.startsWith('COMPETITOR'))return 'Competitor';
+ if(u.startsWith('EVENT'))return 'Event Space';
+ if(u.startsWith('BUSINESS'))return 'Business Service';
+ if(u.startsWith('LIVE'))return 'Live Streaming';
+ if(u.startsWith('YOUTUBE')||u.includes('YOUTUBE'))return 'YouTube (Demand Gen)';
+ return 'Other';}
+function met(o){o.cpl=o.conv?o.spend/o.conv:0;o.cpc=o.clicks?o.spend/o.clicks:0;o.ctr=o.impr?o.clicks/o.impr*100:0;o.cvr=o.clicks?o.conv/o.clicks*100:0;return o;}
+function sumWin(s,e){let o={spend:0,clicks:0,impr:0,conv:0};for(let i=s;i<=e;i++){o.spend+=MS[i].spend;o.clicks+=MS[i].clicks;o.impr+=MS[i].impr;o.conv+=MS[i].conv;}return met(o);}
+// Returns the comparison baseline + its label for the current selection.
+// For the single partial (MTD) month, uses an EQUAL day-span window (fair), per the chosen basis.
+function baseline(){
+ const single=state.s===state.e;
+ const M=DATA.mtd_cmp;
+ if(single && M && MS[state.s].month===M.month){
+   const b=state.mtdBasis==='yoy'?M.yoy:M.prevmonth;
+   return {P:met({spend:b.spend,clicks:b.clicks,impr:b.impr,conv:b.conv}), label:'vs '+b.label, span:M.cur_span};
+ }
+ const L=state.e-state.s+1; const ps=Math.max(0,state.s-L), pe=state.s-1;
+ if(pe<ps||state.s===0) return {P:null,label:'vs prev',span:null};
+ return {P:sumWin(ps,pe), label:'vs prev '+L+'mo ('+mname(MS[ps].month)+'–'+mname(MS[pe].month)+')', span:null};
+}
+function campWin(s,e,by){const set=new Set(MS.slice(s,e+1).map(m=>m.month));const g={};
+ CAMP.forEach(r=>{if(!set.has(r.month))return;const k=by==='prod'?prod(r.campaign):r.campaign.replace(/^\[SEARCH\]\s*/,'');
+  const d=g[k]||(g[k]={name:k,spend:0,clicks:0,impr:0,conv:0});d.spend+=r.spend;d.clicks+=r.clicks;d.impr+=r.impr;d.conv+=r.conv;});
+ return Object.values(g).map(met);}
+
+const SEC=[['exec','1 · Executive Summary'],['trend','2 · Performance Trend'],['health','3 · Account Health'],
+ ['mom','4 · Period Comparison'],['product','5 · Product'],['campaign','6 · Campaigns'],['location','7 · Location'],
+ ['search','8 · Search Terms'],['match','9 · Match Type'],['device','10 · Device'],['budget','11 · Budget'],
+ ['lostis','12 · Lost Imp. Share'],['anomaly','13 · Anomalies'],['action','14 · Action Center'],['cmo','15 · CMO Summary']];
+document.getElementById('nav').innerHTML=SEC.map(s=>`<a href="#${s[0]}">${s[1]}</a>`).join('');
+
+// month selects
+const NM=MS.length;
+['aStart','aEnd','bStart','bEnd'].forEach(id=>{const sel=document.getElementById(id);
+ sel.innerHTML=MS.map((m,i)=>`<option value="${i}">${mlabel(m.month,i)}</option>`).join('');});
+const LASTFULL=(()=>{for(let i=NM-1;i>=0;i--)if(!isPartial(i))return i;return NM-1;})();
+
+const state={s:0,e:NM-1,metric:'cpl',cmp:false,bs:0,be:Math.floor(NM/2)-1,mtdBasis:'prevmonth'};
+let CMPLABEL='vs prev';
+// default 12M
+function setQR(r){let s,e;
+ if(r===1){e=NM-1;s=NM-1;}               // Latest month = newest (June MTD)
+ else if(r===0||r===24){s=0;e=NM-1;}     // All / 24M = everything incl. June MTD
+ else {e=LASTFULL;s=Math.max(0,e-r+1);}  // rolling 3/6/12M end at last FULL month
+ state.s=s;state.e=e;syncSel();render();}
+function syncSel(){aStart.value=state.s;aEnd.value=state.e;bStart.value=state.bs;bEnd.value=state.be;}
+const aStart=document.getElementById('aStart'),aEnd=document.getElementById('aEnd'),
+ bStart=document.getElementById('bStart'),bEnd=document.getElementById('bEnd');
+
+let CH={}; // charts
+function render(){
+ const A=sumWin(state.s,state.e);
+ const L=state.e-state.s+1;
+ const bl=baseline(); const Pr=bl.P; CMPLABEL=bl.label;
+ const B=state.cmp?sumWin(state.bs,state.be):null;
+ // show/hide MTD basis selector
+ const single=state.s===state.e, isMTD=single && DATA.mtd_cmp && MS[state.s].month===DATA.mtd_cmp.month;
+ document.getElementById('mtdBasisWrap').style.display=isMTD?'flex':'none';
+ document.getElementById('periodPill').textContent=mlabel(MS[state.s].month,state.s)+' → '+mlabel(MS[state.e].month,state.e);
+ let partial=false;for(let i=state.s;i<=state.e;i++)if(isPartial(i))partial=true;
+ const fairNote=isMTD?` <b>Comparisons here use a fair equal 19-day window</b> (${CMPLABEL.replace('vs ','')}) — switch the baseline with the “MTD baseline” selector above.`:` For a fair read, select June on its own to unlock the equal 19-day baseline.`;
+ document.getElementById('partialWarn').innerHTML=partial?`<div class="insight warn" style="margin:0 0 14px"><b>⚠️ Partial month in view —</b> June 2026 is <b>month-to-date</b> (~19 days), not a full month. Its totals (spend, leads, clicks) are naturally lower than a complete month, so don't read raw totals as a decline.${fairNote} Rate metrics (CPR, CTR, CVR) are always comparable.</div>`:'';
+ renderExec(A,Pr,B,L);
+ renderTrend(A,B);
+ renderMoM(A,Pr);
+ renderProduct();
+ renderCampaign();
+}
+function chgHTML(c,p,goodUp){if(p===null||p===undefined)return '<div class="chg flat">— no baseline</div>';const v=pct(c,p);const good=goodUp?v>=0:v<0;const cls=Math.abs(v)<0.5?'flat':good?'up':'down';return `<div class="chg ${cls}">${v>0?'▲':v<0?'▼':'•'} ${Math.abs(v).toFixed(1)}% ${CMPLABEL}</div>`;}
+function kpi(l,v,chg){return `<div class="card kpi"><div class="lab">${l}</div><div class="val">${v}</div>${chg||''}</div>`;}
+
+function renderExec(A,Pr,B,L){
+ const cmpNote=B?`<div class="chg ${A.cpl<=B.cpl?'up':'down'}">vs Period B CPR ${idr(B.cpl)}</div>`:'';
+ let h=`<div class="grid kpis">
+  ${kpi('Spend',idr(A.spend),chgHTML(A.spend,Pr&&Pr.spend,false))}
+  ${kpi('Leads',f1(A.conv),chgHTML(A.conv,Pr&&Pr.conv,true))}
+  ${kpi('CPR (Cost / Lead)',idr(A.cpl),B?cmpNote:chgHTML(A.cpl,Pr&&Pr.cpl,false))}
+  ${kpi('Conv. Rate',f2(A.cvr)+'%',chgHTML(A.cvr,Pr&&Pr.cvr,true))}
+  ${kpi('Clicks',f0(A.clicks),chgHTML(A.clicks,Pr&&Pr.clicks,true))}
+  ${kpi('Impressions',f0(A.impr),chgHTML(A.impr,Pr&&Pr.impr,true))}
+  ${kpi('CTR',f2(A.ctr)+'%',chgHTML(A.ctr,Pr&&Pr.ctr,true))}
+  ${kpi('CPC',idr(A.cpc),chgHTML(A.cpc,Pr&&Pr.cpc,false))}</div>`;
+ // winners/losers over selected period
+ const P=campWin(state.s,state.e,'prod').filter(p=>p.name!=='YouTube (Demand Gen)').sort((a,b)=>b.conv-a.conv);
+ const avg=A.cpl;const win=P.filter(p=>p.conv>0).sort((a,b)=>a.cpl-b.cpl)[0];
+ const big=P.slice().sort((a,b)=>b.conv-a.conv)[0];
+ const lose=P.filter(p=>p.spend>500000).sort((a,b)=>(b.conv?b.cpl:9e9)-(a.conv?a.cpl:9e9))[0];
+ const waste=P.filter(p=>p.conv<1&&p.spend>300000).sort((a,b)=>b.spend-a.spend)[0];
+ h+=`<div class="insight win"><b>AI Summary —</b> Over <b>${mname(MS[state.s].month)}–${mname(MS[state.e].month)}</b> the account spent <b>${idr(A.spend)}</b> for <b>${f1(A.conv)} leads</b> at a blended <b>CPR ${idr(A.cpl)}</b> (CVR ${f2(A.cvr)}%). <b>${big.name}</b> leads volume with ${f1(big.conv)} leads; <b>${win.name}</b> is the most efficient at ${idr(win.cpl)} CPR.${Pr?` Measured like-for-like (${CMPLABEL.replace('vs ','')}), leads ${pct(A.conv,Pr.conv)>=0?'rose':'fell'} ${Math.abs(pct(A.conv,Pr.conv)).toFixed(0)}% and CPR ${pct(A.cpl,Pr.cpl)<=0?'improved':'rose'} ${Math.abs(pct(A.cpl,Pr.cpl)).toFixed(0)}%.`:''}</div>
+ <div class="flags">
+  <div class="flag g"><div class="t">🏆 Biggest winner</div><div class="n">${big.name}</div><div class="d">${f1(big.conv)} leads at ${idr(big.cpl)} CPR — ${big.cpl<avg?Math.round((1-big.cpl/avg)*100)+'% below':Math.round((big.cpl/avg-1)*100)+'% above'} account average.</div></div>
+  <div class="flag g"><div class="t">💎 Most efficient</div><div class="n">${win.name}</div><div class="d">Lowest CPR in the period at ${idr(win.cpl)} (${f1(win.conv)} leads). Scale candidate.</div></div>
+  <div class="flag r"><div class="t">📉 Biggest drag</div><div class="n">${lose?lose.name:'—'}</div><div class="d">${lose?idr(lose.spend)+' spent at '+(lose.conv?idr(lose.cpl)+' CPR ('+Math.round(lose.cpl/avg*10)/10+'× avg)':'0 leads'):''}.</div></div>
+  <div class="flag y"><div class="t">⚠️ Wasted spend</div><div class="n">${waste?waste.name:'Watch list'}</div><div class="d">${waste?idr(waste.spend)+' for '+f1(waste.conv)+' leads — audit tracking / intent.':'No single product above the waste threshold this period.'}</div></div>
+ </div>`;
+ document.getElementById('execBody').innerHTML=h;
+}
+function metVal(o,m){return m==='cpl'?o.cpl:m==='cpc'?o.cpc:m==='ctr'?o.ctr:m==='cvr'?o.cvr:o[m];}
+const METLAB={cpl:'CPR (Cost / Lead)',spend:'Spend',conv:'Leads',cpc:'CPC',ctr:'CTR %',cvr:'Conv. Rate %',clicks:'Clicks',impr:'Impressions'};
+function fmtMet(v,m){return (m==='spend'||m==='cpl'||m==='cpc')?idr(v):(m==='ctr'||m==='cvr')?v.toFixed(2)+'%':f0(v);}
+function renderTrend(A,B){
+ const m=state.metric;
+ const aRows=MS.slice(state.s,state.e+1).map(x=>met({...x}));
+ const labels=aRows.map(x=>mname(x.month)+(x.partial?' (MTD)':''));
+ const ds=[{label:'Period A',data:aRows.map(x=>metVal(x,m)),borderColor:C.clay,backgroundColor:'rgba(194,96,63,.12)',fill:true,tension:.3,pointRadius:3,borderWidth:2.5}];
+ if(B){const bRows=MS.slice(state.bs,state.be+1).map(x=>met({...x}));
+  const maxlen=Math.max(aRows.length,bRows.length);
+  ds[0].data=aRows.map(x=>metVal(x,m));
+  ds.push({label:'Period B',data:bRows.map(x=>metVal(x,m)),borderColor:C.teal,backgroundColor:'rgba(91,125,111,.10)',fill:false,tension:.3,pointRadius:3,borderWidth:2.5,borderDash:[6,4]});
+  // align by index label "Month n"
+  const lab=[];for(let i=0;i<maxlen;i++)lab.push('M'+(i+1));
+  drawTrend(lab,ds,m,true,aRows,bRows);return;}
+ drawTrend(labels,ds,m,false);
+}
+function drawTrend(labels,ds,m,aligned,aRows,bRows){
+ if(aligned){ds[0].data=aRows.map(x=>metVal(x,m));ds[1].data=bRows.map(x=>metVal(x,m));}
+ if(CH.trend)CH.trend.destroy();
+ CH.trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels,datasets:ds},
+  options:{plugins:{legend:{display:!!ds[1],position:'bottom'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtMet(c.parsed.y,m)}}},
+   scales:{y:{grid:{color:C.line},ticks:{callback:v=>fmtMet(v,m)}},x:{grid:{display:false}}}}});
+ document.getElementById('trendTitle').textContent=METLAB[m]+' — monthly'+(aligned?' (aligned by month index: M1 = each period’s start)':'');
+}
+function renderMoM(A,Pr){
+ const rows=[['Spend',A.spend,Pr&&Pr.spend,false,idr],['Clicks',A.clicks,Pr&&Pr.clicks,true,f0],
+  ['Impressions',A.impr,Pr&&Pr.impr,true,f0],['CTR',A.ctr,Pr&&Pr.ctr,true,v=>v.toFixed(2)+'%'],
+  ['CPC',A.cpc,Pr&&Pr.cpc,false,idr],['Leads',A.conv,Pr&&Pr.conv,true,f1],
+  ['Conv. Rate',A.cvr,Pr&&Pr.cvr,true,v=>v.toFixed(2)+'%'],['CPR (Cost/Lead)',A.cpl,Pr&&Pr.cpl,false,idr]];
+ let h=`<div class="tblwrap"><table><thead><tr><th>Metric</th><th>Selected period</th><th>Baseline · ${CMPLABEL.replace('vs ','')}</th><th>Δ abs</th><th>Δ %</th></tr></thead><tbody>`;
+ rows.forEach(r=>{const[lab,cur,prev,gu,fmt]=r;const p=prev==null?null:pct(cur,prev);const good=p==null?0:(gu?p>=0:p<0);
+  h+=`<tr><td>${lab}</td><td>${fmt(cur)}</td><td>${prev==null?'—':fmt(prev)}</td><td>${prev==null?'—':fmt(cur-prev)}</td><td>${p==null?'—':`<span class="${Math.abs(p)<.5?'flat':good?'up':'down'}">${p>0?'+':''}${p.toFixed(1)}%</span>`}</td></tr>`;});
+ h+=`</tbody></table></div>`;
+ if(Pr){const sp=pct(A.spend,Pr.spend),lp=pct(A.conv,Pr.conv);
+  h+=`<div class="insight ${lp>=sp?'win':'warn'}"><b>Read —</b> Spend ${sp>=0?'+':''}${sp.toFixed(0)}% vs leads ${lp>=0?'+':''}${lp.toFixed(0)}% → CPR ${pct(A.cpl,Pr.cpl)<=0?'improved':'worsened'} ${Math.abs(pct(A.cpl,Pr.cpl)).toFixed(0)}%. ${lp>=sp?'Efficiency improving as you scale — the healthy pattern.':'Leads are not keeping pace with spend — tighten targeting before adding budget.'}</div>`;}
+ document.getElementById('momBody').innerHTML=h;
+}
+function verdict(p,avg){if(p.conv<0.5)return['PAUSE','b-pause'];if(p.cpl<=avg*0.7)return['SCALE','b-scale'];if(p.cpl<=avg)return['MAINTAIN','b-maintain'];if(p.cpl<=avg*2)return['OPTIMIZE','b-optimize'];return['PAUSE','b-pause'];}
+function renderProduct(){
+ const A=sumWin(state.s,state.e);const avg=A.cpl;
+ const P=campWin(state.s,state.e,'prod').sort((a,b)=>b.conv-a.conv);
+ let h=`<div class="two"><div class="card"><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Leads by product</div><div class="chartbox sm"><canvas id="prodLeads"></canvas></div></div>
+ <div class="card"><div style="font-size:12px;color:var(--mut);margin-bottom:6px">CPR by product (red dashed = account avg)</div><div class="chartbox sm"><canvas id="prodCPL"></canvas></div></div></div>`;
+ h+=`<div class="tblwrap"><table><thead><tr><th>Product</th><th>Spend</th><th>Clicks</th><th>CTR</th><th>CPC</th><th>Leads</th><th>CVR</th><th>CPR</th><th>Verdict</th></tr></thead><tbody>`;
+ P.forEach(p=>{const v=verdict(p,avg);h+=`<tr><td>${p.name}</td><td>${idr(p.spend)}</td><td>${f0(p.clicks)}</td><td>${f2(p.ctr)}%</td><td>${idr(p.cpc)}</td><td><b>${f1(p.conv)}</b></td><td>${f2(p.cvr)}%</td><td>${p.conv?idr(p.cpl):'—'}</td><td><span class="badge ${v[1]}">${v[0]}</span></td></tr>`;});
+ h+=`</tbody></table></div><div class="note">Verdict logic: SCALE ≤0.7× avg CPR · MAINTAIN ≤avg · OPTIMIZE ≤2× avg · PAUSE >2× avg or ~0 leads. Account avg CPR this period = ${idr(avg)}.</div>`;
+ document.getElementById('prodBody').innerHTML=h;
+ const pc=P.filter(p=>p.conv>0&&p.name!=='YouTube (Demand Gen)');
+ if(CH.pl)CH.pl.destroy();CH.pl=new Chart(document.getElementById('prodLeads'),{type:'bar',data:{labels:pc.map(x=>x.name.replace(/\s*\(.*\)/,'')),datasets:[{data:pc.map(x=>x.conv),backgroundColor:C.olive}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:C.line}}}}});
+ if(CH.pcpl)CH.pcpl.destroy();CH.pcpl=new Chart(document.getElementById('prodCPL'),{type:'bar',data:{labels:pc.map(x=>x.name.replace(/\s*\(.*\)/,'')),datasets:[{data:pc.map(x=>x.cpl/1e3),backgroundColor:pc.map(x=>x.cpl<=avg?C.olive:x.cpl<=avg*2?C.mustard:C.clay)}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:C.line},title:{display:true,text:'CPR (Rp000)'}}}}});
+}
+function renderCampaign(){
+ const A=sumWin(state.s,state.e);const avg=A.cpl;
+ const Cs=campWin(state.s,state.e,'camp').sort((a,b)=>b.conv-a.conv);
+ let h=`<div class="subtle" style="margin-left:0">All ${Cs.length} campaigns active in the selected window. "Leads / Rp1M" = lead-value index (ROAS proxy). Click a header to sort.</div>`;
+ h+=`<div class="tblwrap"><table><thead><tr><th>Campaign</th><th>Spend</th><th>Clicks</th><th>CTR</th><th>CPC</th><th>Leads</th><th>CVR</th><th>CPR</th><th>Leads/Rp1M</th><th>Verdict</th></tr></thead><tbody>`;
+ Cs.forEach(c=>{const v=verdict(c,avg);const lvi=c.spend?c.conv/c.spend*1e6:0;h+=`<tr><td>${c.name}</td><td>${idr(c.spend)}</td><td>${f0(c.clicks)}</td><td>${f2(c.ctr)}%</td><td>${idr(c.cpc)}</td><td><b>${f1(c.conv)}</b></td><td>${f2(c.cvr)}%</td><td>${c.conv?idr(c.cpl):'—'}</td><td>${f2(lvi)}</td><td><span class="badge ${v[1]}">${v[0]}</span></td></tr>`;});
+ h+=`</tbody></table></div>`;
+ document.getElementById('campBody').innerHTML=h;
+ enableSort();
+}
+
+// ---------- STATIC (latest full month = May 2026) ----------
+function aggList(rows,key){const g={};rows.forEach(r=>{const k=r[key];const d=g[k]||(g[k]={name:k,spend:0,clicks:0,impr:0,conv:0});d.spend+=r.spend;d.clicks+=r.clicks;d.impr+=r.impr;d.conv+=r.conv;});return Object.values(g).map(met);}
+function buildStatic(){
+ // Health from May campaign IS
+ const cm=DATA.camp_may_is;const tot=cm.reduce((a,c)=>({spend:a.spend+c.spend,clicks:a.clicks+c.clicks,impr:a.impr+c.impr,conv:a.conv+c.conv}),{spend:0,clicks:0,impr:0,conv:0});met(tot);
+ const wIS=cm.reduce((a,c)=>a+c.is*c.impr,0)/cm.reduce((a,c)=>a+c.impr,0);
+ const wLB=cm.reduce((a,c)=>a+c.lb*c.impr,0)/cm.reduce((a,c)=>a+c.impr,0);
+ const wLR=cm.reduce((a,c)=>a+c.lr*c.impr,0)/cm.reduce((a,c)=>a+c.impr,0);
+ const tq=Math.max(0,Math.min(100,tot.ctr/6*100)),ce=Math.max(0,Math.min(100,tot.cvr/5*100)),
+  be=Math.max(0,Math.min(100,(1-wLB/0.4)*100)),mc=Math.max(0,Math.min(100,wIS/0.3*100)),
+  le=Math.max(0,Math.min(100,(1-((tot.cpl-150000)/(600000-150000)))*100));
+ const overall=Math.round(tq*0.18+ce*0.22+be*0.15+mc*0.15+le*0.30);
+ const col=v=>v>=70?C.olive:v>=45?C.mustard:C.clay;
+ const r=78,circ=2*Math.PI*r,off=circ*(1-overall/100);
+ const gauge=`<svg viewBox="0 0 180 180" class="gauge"><circle cx="90" cy="90" r="${r}" fill="none" stroke="${C.line}" stroke-width="14"/><circle cx="90" cy="90" r="${r}" fill="none" stroke="${col(overall)}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 90 90)"/></svg><div class="num" style="position:absolute;inset:0"><b style="font-size:42px;font-weight:800;color:${col(overall)}">${overall}</b><span style="font-size:11px;color:var(--mut);letter-spacing:1px">/ 100</span></div>`;
+ const subr=(l,v,why)=>`<div class="subrow"><div>${l}</div><div class="lbar"><i style="width:${v}%;background:${col(v)}"></i></div><div class="sv" style="color:${col(v)}">${Math.round(v)}</div></div><div style="grid-column:1/-1;font-size:11.3px;color:var(--mut);margin:-3px 0 2px">${why}</div>`;
+ document.getElementById('healthBody').innerHTML=`<div class="card"><div class="health"><div><div style="position:relative;width:180px;height:180px;margin:auto">${gauge}</div><div style="text-align:center;margin-top:8px;font-weight:800;color:${col(overall)}">${overall>=70?'HEALTHY':overall>=45?'NEEDS WORK':'AT RISK'}</div></div><div class="sub">
+  ${subr('Lead Efficiency',le,`Blended CPR ${idr(tot.cpl)} — reasonable for B2B office leads, above the Rp150K "excellent" mark.`)}
+  ${subr('Conversion Efficiency',ce,`CVR ${f2(tot.cvr)}% — improving but below a 5% best-practice target.`)}
+  ${subr('Traffic Quality',tq,`CTR ${f2(tot.ctr)}% — strong intent capture for search.`)}
+  ${subr('Market Coverage',mc,`Impression share ~${f1(wIS*100)}% — visible on only ~1 in 5 eligible auctions.`)}
+  ${subr('Budget Efficiency',be,`${f1(wLB*100)}% of impressions lost to limited budget — material but recoverable.`)}
+ </div></div><div class="insight"><b>Why ${overall} —</b> Fundamentals are healthy (high CTR, improving CVR) but coverage is low and winning campaigns are budget-throttled, while a tail of zero-lead spend lifts blended CPR.</div></div>`;
+
+ // Location (May adgroups)
+ const L=DATA.adg_may.map(r=>met({...r,name:r.adgroup})).sort((a,b)=>b.conv-a.conv);
+ let lh=`<div class="tblwrap"><table><thead><tr><th>Location / Ad group</th><th>Spend</th><th>Clicks</th><th>CTR</th><th>Leads</th><th>CVR</th><th>CPR</th></tr></thead><tbody>`;
+ L.forEach(l=>{lh+=`<tr><td>${l.adgroup||l.name||''}</td><td>${idr(l.spend)}</td><td>${f0(l.clicks)}</td><td>${f2(l.ctr)}%</td><td><b>${f1(l.conv)}</b></td><td>${f2(l.cvr)}%</td><td>${l.conv?idr(l.cpl):'—'}</td></tr>`;});
+ lh+=`</tbody></table></div><div class="flags">
+  <div class="flag g"><div class="t">🔥 High-demand</div><div class="n">Brand-ID, Brand-Kantor, Brand-EN</div><div class="d">Branded office/location demand drives the most leads at the lowest CPR. Keep 100% coverage.</div></div>
+  <div class="flag b"><div class="t">💎 Hidden opportunity</div><div class="n">PO AON General & Jaksel</div><div class="d">High-impression Jakarta PO ad groups convert but at low impression share — room to scale.</div></div>
+  <div class="flag y"><div class="t">💸 Expensive</div><div class="n">PO-SBY/Bali, VO General</div><div class="d">Surabaya/Bali PO & VO General spend heavily for 1–2 leads — lower bids / restructure.</div></div>
+  <div class="flag r"><div class="t">🧊 Low-demand</div><div class="n">CS-Bali/MDN, MR-General-EN</div><div class="d">Secondary-city coworking & English meeting-room ad groups: near-zero leads — geo-restrict.</div></div></div>`;
+ document.getElementById('locBody').innerHTML=lh;
+
+ // Search terms (May)
+ const st=DATA.st_may.map(met);const conv=st.filter(x=>x.conv>0).sort((a,b)=>b.conv-a.conv);
+ const waste=st.filter(x=>x.conv===0&&(x.clicks>=8||x.spend>=20000)).sort((a,b)=>b.spend-a.spend);
+ const wasteTot=waste.reduce((a,x)=>a+x.spend,0);
+ const negReason=t=>{t=t.toLowerCase();if(t.includes('near me'))return'Broad low-intent';if(t.includes('tower')||t.includes('square')||t.includes('sudirman')||t.includes('atria')||t.includes('asg')||t.includes('innovative'))return'Building/competitor — wrong intent';return'Clicks, 0 leads';};
+ let sh=`<div class="two"><div class="card"><h4 style="color:var(--olive);margin-bottom:8px">🏅 Top converting terms</h4><div class="tblwrap"><table><thead><tr><th>Term</th><th>Clicks</th><th>Leads</th><th>CPR</th></tr></thead><tbody>`;
+ conv.forEach(t=>sh+=`<tr><td>${t.term}</td><td>${f0(t.clicks)}</td><td>${f1(t.conv)}</td><td>${idr(t.cpl)}</td></tr>`);
+ sh+=`</tbody></table></div></div><div class="card"><h4 style="color:var(--clay2);margin-bottom:8px">🚫 Wasted — negative candidates</h4><div class="tblwrap"><table><thead><tr><th>Term</th><th>Clicks</th><th>Spend</th><th>Reason</th></tr></thead><tbody>`;
+ waste.forEach(t=>sh+=`<tr><td>${t.term}</td><td>${f0(t.clicks)}</td><td>${idr(t.spend)}</td><td>${negReason(t.term)}</td></tr>`);
+ sh+=`</tbody></table></div></div></div><div class="insight risk"><b>Potential savings —</b> ~<b>${idr(wasteTot)}</b>/month on non-converting terms. "coworking space near me" alone burns ${idr(91256)} at 0 leads — add as negative and route budget to Brand/PO.</div>`;
+ document.getElementById('searchBody').innerHTML=sh;
+
+ // Match (May)
+ const mt=DATA.mt_may.map(r=>met({...r,name:r.match})).sort((a,b)=>b.conv-a.conv);
+ let mh=`<div class="two"><div class="card"><div class="chartbox sm"><canvas id="mtChart"></canvas></div></div><div class="card"><div class="tblwrap"><table><thead><tr><th>Match</th><th>Spend</th><th>Clicks</th><th>CTR</th><th>Leads</th><th>CVR</th><th>CPR</th></tr></thead><tbody>`;
+ mt.forEach(m=>mh+=`<tr><td>${m.name}</td><td>${idr(m.spend)}</td><td>${f0(m.clicks)}</td><td>${f2(m.ctr)}%</td><td>${f1(m.conv)}</td><td>${f2(m.cvr)}%</td><td>${m.conv?idr(m.cpl):'—'}</td></tr>`);
+ mh+=`</tbody></table></div></div></div>`;
+ const ex=mt.find(m=>m.name==='EXACT'),br=mt.find(m=>m.name==='BROAD');
+ mh+=`<div class="insight win"><b>Most efficient —</b> Exact: best CPR ${idr(ex.cpl)} & CVR ${f2(ex.cvr)}%. Shift budget toward Exact + strong Phrase.</div><div class="insight warn"><b>Riskiest —</b> Broad: ${idr(br.cpl)} CPR (~${(br.cpl/ex.cpl).toFixed(1)}× Exact) and the main source of wasted terms — keep only with tight negatives & smart bidding.</div>`;
+ document.getElementById('matchBody').innerHTML=mh;
+
+ // Device (May)
+ const dv=DATA.dev_may.map(r=>met({...r,name:r.device})).sort((a,b)=>b.conv-a.conv);
+ let dh=`<div class="two"><div class="card"><div class="chartbox sm"><canvas id="devChart"></canvas></div></div><div class="card"><div class="tblwrap"><table><thead><tr><th>Device</th><th>Spend</th><th>Clicks</th><th>Leads</th><th>CVR</th><th>CPR</th><th>Bid</th></tr></thead><tbody>`;
+ const da=met(dv.reduce((a,d)=>({spend:a.spend+d.spend,clicks:a.clicks+d.clicks,impr:a.impr+d.impr,conv:a.conv+d.conv}),{spend:0,clicks:0,impr:0,conv:0}));
+ dv.forEach(d=>{const act=d.conv===0?'<span class="badge b-pause">−</span>':d.cpl<da.cpl?'<span class="badge b-scale">+</span>':'<span class="badge b-optimize">hold</span>';dh+=`<tr><td>${d.name}</td><td>${idr(d.spend)}</td><td>${f0(d.clicks)}</td><td>${f1(d.conv)}</td><td>${f2(d.cvr)}%</td><td>${d.conv?idr(d.cpl):'—'}</td><td>${act}</td></tr>`;});
+ dh+=`</tbody></table></div></div></div><div class="insight"><b>Best converting —</b> Desktop (CPR ${idr(dv.find(d=>d.name==='DESKTOP').cpl)}, office decisions made at a desk). <b>Now-What:</b> +10–15% desktop bid, hold mobile, −40–60% tablet.</div>`;
+ document.getElementById('devBody').innerHTML=dh;
+
+ // Budget & Lost IS (May campaign IS)
+ const lo=cm.filter(c=>c.lb>0.15&&c.clicks>5).map(c=>{const elig=c.is?c.impr/c.is:c.impr;const rec=elig*c.lb;const ctr=c.impr?c.clicks/c.impr:0;const cvr=c.clicks?c.conv/c.clicks:0;return{name:c.campaign.replace(/^\[SEARCH\]\s*/,''),lb:c.lb,lr:c.lr,is:c.is,addClicks:rec*ctr,addLeads:rec*ctr*cvr,cpl:c.conv?c.spend/c.conv:0};}).sort((a,b)=>b.addLeads-a.addLeads);
+ const addTot=lo.reduce((a,c)=>a+c.addLeads,0);
+ const over=cm.map(met).filter(c=>c.conv===0||c.cpl>da.cpl*2).sort((a,b)=>b.spend-a.spend);
+ let bh=`<div class="two"><div class="card"><h4 style="color:var(--olive);margin-bottom:6px">⬆️ Budget-limited — raise</h4><div class="tblwrap"><table><thead><tr><th>Campaign</th><th>Lost IS(Bud)</th><th>CPR</th><th>+leads/mo</th></tr></thead><tbody>`;
+ lo.filter(c=>c.lb>c.lr).slice(0,8).forEach(c=>bh+=`<tr><td>${c.name}</td><td>${f1(c.lb*100)}%</td><td>${c.cpl?idr(c.cpl):'—'}</td><td><b class="up">+${f1(c.addLeads)}</b></td></tr>`);
+ bh+=`</tbody></table></div></div><div class="card"><h4 style="color:var(--clay2);margin-bottom:6px">⬇️ Weak CPR / 0 leads — cut</h4><div class="tblwrap"><table><thead><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>CPR</th></tr></thead><tbody>`;
+ over.slice(0,8).forEach(c=>bh+=`<tr><td>${c.campaign.replace(/^\[SEARCH\]\s*/,'')}</td><td>${idr(c.spend)}</td><td>${f1(c.conv)}</td><td>${c.conv?idr(c.cpl):'0 leads'}</td></tr>`);
+ bh+=`</tbody></table></div></div></div><div class="insight win"><b>Now-What —</b> Recovering budget-lost impressions on proven campaigns ≈ <b>+${f0(addTot)} leads/month</b>. Fund it by reallocating from zero/weak-CPR campaigns — a near budget-neutral move.</div>`;
+ document.getElementById('budgetBody').innerHTML=bh;
+
+ let xh=`<div class="tblwrap"><table><thead><tr><th>Campaign</th><th>Lost IS Budget</th><th>Lost IS Rank</th><th>Bottleneck</th><th>+clicks/mo</th><th>+leads/mo</th></tr></thead><tbody>`;
+ lo.forEach(c=>{const diag=c.lb>c.lr?'<span class="badge b-scale">BUDGET → raise</span>':'<span class="badge b-optimize">RANK → fix QS</span>';xh+=`<tr><td>${c.name}</td><td>${f1(c.lb*100)}%</td><td>${f1(c.lr*100)}%</td><td>${diag}</td><td>+${f0(c.addClicks)}</td><td>+${f1(c.addLeads)}</td></tr>`;});
+ xh+=`</tbody></table></div><div class="insight"><b>Diagnosis —</b> Where Lost-IS(Budget) &gt; Rank, add budget. Where Rank dominates (65–85% loss on PO-JKT, CS-JKT, Business Service, VO-AON), fix <b>Ad Rank / Quality Score</b> — more budget there is wasted.</div>`;
+ document.getElementById('lostBody').innerHTML=xh;
+ enableSort();
+
+ // charts
+ if(CH.mt)CH.mt.destroy();CH.mt=new Chart(document.getElementById('mtChart'),{type:'bar',data:{labels:mt.map(m=>m.name),datasets:[{label:'Leads',data:mt.map(m=>m.conv),backgroundColor:C.olive,yAxisID:'y'},{label:'CPR(K)',data:mt.map(m=>m.cpl/1e3),type:'line',borderColor:C.clay,backgroundColor:C.clay,yAxisID:'y1'}]},options:{plugins:{legend:{position:'bottom'}},scales:{y:{position:'left',grid:{color:C.line}},y1:{position:'right',grid:{display:false}}}}});
+ if(CH.dev)CH.dev.destroy();CH.dev=new Chart(document.getElementById('devChart'),{type:'doughnut',data:{labels:dv.map(d=>d.name),datasets:[{data:dv.map(d=>d.conv),backgroundColor:[C.mustard,C.olive,C.clay]}]},options:{plugins:{legend:{position:'bottom'},title:{display:true,text:'Lead share by device'}}}});
+}
+
+// anomalies, action, cmo (semi-static narrative)
+function buildNarrative(){
+ const series=MS.map(met);
+ const yt=series.filter(s=>s.month==='2025-12'||s.month==='2026-01');
+ const an=[
+  ['risk','Display spike distorts Dec–Jan','A [DEMAND GEN] YouTube campaign added ~427K clicks / 427K+ impressions across Dec 2025–Jan 2026 with 0 leads, crushing blended CTR/CPR those months.','Exclude Demand Gen from search-efficiency views; judge it on view-through / brand lift, not CPL.'],
+  ['warn','Lead volatility','Monthly leads swing widely (Feb 2026 spiked to ~465, Mar fell to ~175). Likely conversion-tagging / attribution timing, not real demand.','Audit conversion imports & lag; smooth with rolling averages.'],
+  ['warn','CPR creep on Coworking','CS-Daily / CS campaigns repeatedly run high CPR with broad "near me" intent.','Restructure Daily; promote converting terms to phrase/exact; add negatives.'],
+  ['win','Brand engine strong','Brand consistently the cheapest, highest-volume lead source across all months.','Keep uncapped — safest growth lever.'],
+ ];
+ let h='';an.forEach(a=>h+=`<div class="insight ${a[0]}"><b>${a[0]==='win'?'✅':a[0]==='risk'?'🚨':'⚠️'} ${a[1]} —</b> ${a[2]} <br><b>Action:</b> ${a[3]}</div>`);
+ document.getElementById('anomalyBody').innerHTML=h;
+
+ const acts=[
+  [1,'Cut zero-lead spend','Meeting-Room & Coworking "Daily"/secondary-city and Competitor campaigns repeatedly spend with ~0 leads.','Pause or cap to Rp50K/day; audit conversion tracking & landing pages.','Frees ~Rp1.2M+/mo to redeploy.'],
+  [1,'Add negative keywords','"…near me", building names & navigational terms burn budget at 0 leads.','Upload the Section-8 negative list at account level.','Stops bleed; lifts Brand/PO budget.'],
+  [2,'Fund budget-throttled winners','Brand, Event Space, Live Streaming & Jakarta PO lose impressions to budget caps.','Raise daily budgets 20–30% where Lost-IS(Budget) > Rank.','Est. double-digit incremental leads/mo.'],
+  [2,'Fix Ad Rank on rank-limited campaigns','PO-JKT, CS-JKT, Business Service, VO-AON lose 65–85% IS to rank.','Improve Quality Score: tighten ad-group→keyword→landing relevance.','More impressions without more budget.'],
+  [2,'Shift toward Exact match','Exact delivers the lowest CPR; Broad ~2× higher.','Promote converting terms to Exact; constrain Broad.','Lower blended CPR.'],
+  [3,'Device bid adjustments','Desktop best CPR; tablet weak.','+10–15% desktop, −40–60% tablet.','Marginal CPR improvement.'],
+  [3,'Connect GA4 + audience + hour/day','Audience, schedule & landing analyses need more data.','Add GA4 landing pages, audiences, hour/day to the Windsor pull.','Unlocks CRO, dayparting & audience scaling.'],
+ ];
+ let ah='';acts.forEach(a=>ah+=`<div class="rec"><div class="pn p${a[0]}">P${a[0]}</div><div style="flex:1"><h4>${a[1]}</h4><div class="meta"><b>Issue:</b> ${a[2]}</div><div class="meta"><b>Action:</b> ${a[3]}</div><div class="meta"><b>Expected:</b> ${a[4]}</div></div></div>`);
+ document.getElementById('actionBody').innerHTML=ah;
+
+ const cmo=[
+  ['1. What is driving growth?','Branded demand capture plus efficient Event Space, Live Streaming and Jakarta Private Office. Brand is the cheapest, highest-volume lead source every month.'],
+  ['2. What is hurting performance?','A persistent tail of zero/weak-lead spend (Meeting-Room & Coworking "Daily"/secondary cities, Competitor) and ~Rp0.5–1.2M/mo of wasted search terms, plus low market coverage (~19% IS).'],
+  ['3. Which products deserve more budget?','Brand (uncap), Event Space and Live Streaming (lowest CPR), and Jakarta Private Office — all proven and budget-throttled.'],
+  ['4. Which campaigns should be optimized?','PO-JKT & CS-JKT (rank-limited — fix Quality Score, not budget), Business Service (watch navigational waste), and Broad match across the account.'],
+  ['5. Which campaigns should be paused?','Meeting-Room-Daily, Coworking secondary-city, and Competitor when they post ~0 leads — until tracking & landing pages are verified.'],
+  ['6. Biggest opportunity next month?','Reallocate wasted/weak spend into budget-throttled winners & recover budget-lost impressions — double-digit incremental leads, largely budget-neutral.'],
+  ['7. Biggest risk next month?','Scaling into rank-limited & broad campaigns without fixing Quality Score and conversion tracking — inflating CPC/CPR and masking efficiency gains.'],
+ ];
+ let ch=`<div class="insight win" style="font-size:14px"><b>Bottom line —</b> The account is healthy and lead-efficient where it counts. The highest-ROI move is not spending more — it is <b>cutting the zero-lead tail and redeploying into Brand, Event and Private-Office demand you are currently capping.</b></div>`;
+ cmo.forEach(q=>ch+=`<div class="q"><h4>${q[0]}</h4><div>${q[1]}</div></div>`);
+ document.getElementById('cmoBody').innerHTML=ch;
+}
+
+function enableSort(){document.querySelectorAll('th').forEach(th=>{if(th._b)return;th._b=1;th.addEventListener('click',()=>{const t=th.closest('table'),idx=[...th.parentNode.children].indexOf(th),tb=t.tBodies[0],rows=[...tb.rows];const dir=th._d=!th._d;rows.sort((a,b)=>{let x=a.cells[idx].innerText,y=b.cells[idx].innerText;const nx=parseFloat(x.replace(/[^0-9.\-]/g,'')),ny=parseFloat(y.replace(/[^0-9.\-]/g,''));if(!isNaN(nx)&&!isNaN(ny))return dir?nx-ny:ny-nx;return dir?x.localeCompare(y):y.localeCompare(x);});rows.forEach(r=>tb.appendChild(r));});});}
+
+// ---------- layout ----------
+function sec(id,num,title,snap){return `<section id="${id}"><div class="sechd"><div class="secnum">${num}</div><h2>${title}</h2>${snap?'<span class="snap">Latest full month · May 2026</span>':''}</div><div id="${id}Body2"></div></section>`;}
+document.getElementById('main').innerHTML=`
+<section id="exec"><div class="sechd"><div class="secnum">1</div><h2>Executive Summary</h2></div><div class="subtle">Headline KPIs for the selected period, with deltas vs the previous equal-length period. Winners/losers recompute as you change the range.</div><div id="partialWarn"></div><div id="execBody"></div></section>
+<section id="trend"><div class="sechd"><div class="secnum">2</div><h2>Performance Trend</h2></div><div class="subtle" id="trendTitle">CPR — monthly</div><div class="card"><div class="chartbox"><canvas id="trendChart"></canvas></div></div></section>
+<section id="health"><div class="sechd"><div class="secnum">3</div><h2>Account Health Score</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Composite 0–100: lead efficiency (30%), conversion (22%), traffic quality (18%), coverage (15%), budget (15%).</div><div id="healthBody"></div></section>
+<section id="mom"><div class="sechd"><div class="secnum">4</div><h2>Period Comparison</h2></div><div class="subtle">Selected period vs the previous equal-length period — absolute & % change.</div><div id="momBody"></div></section>
+<section id="product"><div class="sechd"><div class="secnum">5</div><h2>Product Performance</h2></div><div class="subtle">Campaigns rolled to products, aggregated over the selected period. Verdict drives action.</div><div id="prodBody"></div></section>
+<section id="campaign"><div class="sechd"><div class="secnum">6</div><h2>Campaign Ranking</h2></div><div id="campBody"></div></section>
+<section id="location"><div class="sechd"><div class="secnum">7</div><h2>Location / Geographic Demand</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Ad-group level read as geographic & demand-segment signal.</div><div id="locBody"></div></section>
+<section id="search"><div class="sechd"><div class="secnum">8</div><h2>Search Term Analysis</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Converting demand vs wasted spend / negative-keyword candidates.</div><div id="searchBody"></div></section>
+<section id="match"><div class="sechd"><div class="secnum">9</div><h2>Match Type Analysis</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Exact vs Phrase vs Broad vs AI-Max efficiency & scalability.</div><div id="matchBody"></div></section>
+<section id="device"><div class="sechd"><div class="secnum">10</div><h2>Device Analysis</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Desktop vs Mobile vs Tablet with bid guidance.</div><div id="devBody"></div></section>
+<section id="budget"><div class="sechd"><div class="secnum">11</div><h2>Budget Efficiency</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Budget-throttled winners vs weak-CPR spenders to fund them.</div><div id="budgetBody"></div></section>
+<section id="lostis"><div class="sechd"><div class="secnum">12</div><h2>Lost Impression Share</h2><span class="snap">Latest full month · May 2026</span></div><div class="subtle">Budget vs Rank bottleneck per campaign, with recoverable clicks & leads.</div><div id="lostBody"></div></section>
+<section id="anomaly"><div class="sechd"><div class="secnum">13</div><h2>Anomaly Detection</h2></div><div class="subtle">Auto-flagged spikes & drops across the 12-month series.</div><div id="anomalyBody"></div></section>
+<section id="action"><div class="sechd"><div class="secnum">14</div><h2>Action Center</h2></div><div class="subtle">Prioritized: P1 now · P2 this week · P3 future.</div><div id="actionBody"></div></section>
+<section id="cmo"><div class="sechd"><div class="secnum">15</div><h2>CMO Summary</h2></div><div class="subtle">Plain-English board read.</div><div class="cmo" id="cmoBody"></div></section>`;
+
+// events
+document.querySelectorAll('#qr button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#qr button').forEach(x=>x.classList.remove('on'));b.classList.add('on');setQR(+b.dataset.r);}));
+aStart.addEventListener('change',()=>{state.s=Math.min(+aStart.value,state.e);clearQR();render();});
+aEnd.addEventListener('change',()=>{state.e=Math.max(+aEnd.value,state.s);clearQR();render();});
+bStart.addEventListener('change',()=>{state.bs=Math.min(+bStart.value,state.be);render();});
+bEnd.addEventListener('change',()=>{state.be=Math.max(+bEnd.value,state.bs);render();});
+document.getElementById('metric').addEventListener('change',e=>{state.metric=e.target.value;render();});
+document.getElementById('mtdBasis').addEventListener('change',e=>{state.mtdBasis=e.target.value;render();});
+document.getElementById('cmp').addEventListener('change',e=>{state.cmp=e.target.checked;document.getElementById('periodB').classList.toggle('show',e.target.checked);render();});
+function clearQR(){document.querySelectorAll('#qr button').forEach(x=>x.classList.remove('on'));}
+
+// init — open on the current month (June 2026 MTD)
+setQR(1);syncSel();buildStatic();buildNarrative();
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){document.querySelectorAll('.navlinks a').forEach(a=>a.style.color='');const x=document.querySelector('.navlinks a[href="#'+en.target.id+'"]');if(x)x.style.color='var(--clay)';}})},{rootMargin:'-30% 0px -60% 0px'});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+</script></body></html>
